@@ -40,8 +40,3 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
-
-[UninstallDelete]
-Type: files; Name: "{app}\config.json"
-Type: files; Name: "{app}\config.json.tmp"
-Type: files; Name: "{app}\download_progress.json"

@@ -1,3 +1,5 @@
+import json
+import os
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -141,6 +143,50 @@ class ConfigStatusTest(unittest.TestCase):
 
         self.assertEqual("123", saved["list_sync"]["lists"][0]["list_id"])
         self.assertEqual("456", saved["list_sync"]["lists"][1]["list_id"])
+
+    def test_config_migration_preserves_values_adds_defaults_and_backs_up(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = os.path.join(temp_dir, "config.json")
+            old_config = {
+                "cookie": "keep-cookie",
+                "save_path": "D:/keep/downloads",
+                "list_sync": {
+                    "enabled": True,
+                    "list_id": "12345",
+                    "list_owner": "example_owner",
+                    "list_slug": "favorites",
+                },
+            }
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump(old_config, f)
+
+            with patch.object(server, "CONFIG_PATH", config_path):
+                migrated = server.load_config_data()
+
+            self.assertEqual("keep-cookie", migrated["cookie"])
+            self.assertEqual("D:/keep/downloads", migrated["save_path"])
+            self.assertEqual(server.CURRENT_CONFIG_VERSION, migrated["config_version"])
+            self.assertIn("download", migrated)
+            self.assertEqual("12345", migrated["list_sync"]["lists"][0]["list_id"])
+            self.assertTrue(os.path.exists(config_path + ".bak"))
+            with open(config_path + ".bak", "r", encoding="utf-8") as f:
+                backup = json.load(f)
+            self.assertNotIn("config_version", backup)
+            self.assertEqual("keep-cookie", backup["cookie"])
+
+    def test_save_config_creates_backup_before_replacing_config(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = os.path.join(temp_dir, "config.json")
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump({"cookie": "old-cookie"}, f)
+
+            with patch.object(server, "CONFIG_PATH", config_path):
+                server.save_config_data({"cookie": "new-cookie"})
+
+            with open(config_path, "r", encoding="utf-8") as f:
+                self.assertEqual("new-cookie", json.load(f)["cookie"])
+            with open(config_path + ".bak", "r", encoding="utf-8") as f:
+                self.assertEqual("old-cookie", json.load(f)["cookie"])
 
 
 if __name__ == "__main__":

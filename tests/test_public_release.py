@@ -81,6 +81,8 @@ class PublicReleaseTest(unittest.TestCase):
         self.assertIn("UninstallDisplayName", installer_text)
         self.assertIn("DefaultDirName", installer_text)
         self.assertIn("config.example.json", installer_text)
+        self.assertNotIn('Name: "{app}\\config.json"', installer_text)
+        self.assertNotIn('Name: "{app}\\download_progress.json"', installer_text)
         self.assertTrue(workflow.exists())
         self.assertIn("softprops/action-gh-release", workflow.read_text(encoding="utf-8"))
         self.assertIn("iscc", workflow.read_text(encoding="utf-8").lower())
@@ -101,6 +103,12 @@ class PublicReleaseTest(unittest.TestCase):
         self.assertIn("Download xDownloader Setup / 下载 xDownloader 安装包", readme)
         self.assertIn("Bilingual commits", readme)
         self.assertIn("双语提交", readme)
+
+    def test_readme_documents_no_loss_upgrades(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("No-loss upgrades", readme)
+        self.assertIn("config.json.bak", readme)
+        self.assertIn("无损升级", readme)
 
 
 if __name__ == "__main__":

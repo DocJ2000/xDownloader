@@ -2,6 +2,7 @@ import json
 import os
 import re
 import csv
+import shutil
 import threading
 import time
 import sys
@@ -17,6 +18,7 @@ CONFIG_PATH = os.path.join(PROJECT_ROOT, 'config.json')
 BUNDLED_CONFIG_EXAMPLE = os.path.join(getattr(sys, '_MEIPASS', PROJECT_ROOT), 'config.example.json')
 DOWNLOAD_ROOT = os.path.join(PROJECT_ROOT, 'downloads')
 PORT = 8765
+CURRENT_CONFIG_VERSION = 2
 
 _BASE_DIR = ASSET_ROOT
 
@@ -700,11 +702,123 @@ def search_users_and_tweets(query):
     return users_result, tweets_result
 
 
+def default_config_data():
+    return {
+        "config_version": CURRENT_CONFIG_VERSION,
+        "save_path": "downloads",
+        "user_list": [],
+        "cookie": "",
+        "bearer_token": "",
+        "proxy": "",
+        "time_range": "2015-01-01:2030-01-01",
+        "image_format": "orig",
+        "mode": {
+            "has_video": True,
+            "has_retweet": False,
+            "has_highlights": False,
+            "has_likes": False
+        },
+        "download": {
+            "max_concurrent": 16,
+            "async_enabled": True,
+            "enable_cache": True,
+            "auto_sync": False
+        },
+        "list_sync": {
+            "enabled": False,
+            "list_id": "",
+            "list_owner": "",
+            "list_slug": "",
+            "lists": []
+        },
+        "retry": {
+            "max_user_retries": 3,
+            "delay_seconds": 10
+        },
+        "logging": {
+            "verbose": False,
+            "log_file": ""
+        },
+        "tag_search": {
+            "tag": "",
+            "filter": "",
+            "download_count": 100,
+            "media_latest": False,
+            "text_mode": False
+        },
+        "text_download": {
+            "user_list": [],
+            "max_tweets": 500,
+            "request_delay": 2,
+            "max_retries": 3
+        },
+        "theme": "dark-glass"
+    }
+
+
+def _merge_missing_defaults(config_data, defaults):
+    changed = False
+    for key, value in defaults.items():
+        if key not in config_data:
+            config_data[key] = value
+            changed = True
+        elif isinstance(config_data[key], dict) and isinstance(value, dict):
+            child_changed = _merge_missing_defaults(config_data[key], value)
+            changed = changed or child_changed
+    return changed
+
+
+def migrate_config_data(config_data):
+    if not isinstance(config_data, dict):
+        config_data = {}
+    changed = _merge_missing_defaults(config_data, default_config_data())
+    list_sync = config_data.get("list_sync") or {}
+    if not isinstance(list_sync, dict):
+        list_sync = {}
+        config_data["list_sync"] = list_sync
+        changed = True
+    legacy_id = (list_sync.get("list_id") or "").strip()
+    legacy_owner = (list_sync.get("list_owner") or "").strip()
+    legacy_slug = (list_sync.get("list_slug") or "").strip()
+    lists = list_sync.get("lists")
+    if not isinstance(lists, list):
+        lists = []
+        list_sync["lists"] = lists
+        changed = True
+    if not lists and (legacy_id or legacy_owner or legacy_slug):
+        lists.append({
+            "name": legacy_slug or legacy_owner or legacy_id or "List",
+            "list_id": legacy_id,
+            "list_owner": legacy_owner,
+            "list_slug": legacy_slug,
+            "enabled": list_sync.get("enabled", True) is not False
+        })
+        changed = True
+    if config_data.get("config_version") != CURRENT_CONFIG_VERSION:
+        config_data["config_version"] = CURRENT_CONFIG_VERSION
+        changed = True
+    return config_data, changed
+
+
+def backup_config_file(config_path=CONFIG_PATH):
+    if not os.path.exists(config_path):
+        return
+    backup_path = config_path + ".bak"
+    try:
+        shutil.copy2(config_path, backup_path)
+    except OSError as e:
+        print(f"Failed to back up config: {e}")
+
+
 def load_config_data():
-    ensure_config_file()
+    ensure_config_file(CONFIG_PATH)
     try:
         with open(CONFIG_PATH, 'r', encoding='utf-8-sig') as f:
-            return json.load(f)
+            data = json.load(f)
+        migrated, changed = migrate_config_data(data)
+        if changed:
+            save_config_data(migrated)
+        return migrated
     except (OSError, json.JSONDecodeError) as e:
         print(f"Failed to load config: {e}")
         return {}
@@ -718,56 +832,7 @@ def ensure_config_file(config_path=CONFIG_PATH, example_path=BUNDLED_CONFIG_EXAM
         with open(example_path, 'r', encoding='utf-8-sig') as src:
             data = src.read()
     else:
-        data = json.dumps({
-            "save_path": "downloads",
-            "user_list": [],
-            "cookie": "",
-            "bearer_token": "",
-            "proxy": "",
-            "time_range": "2015-01-01:2030-01-01",
-            "image_format": "orig",
-            "mode": {
-                "has_video": True,
-                "has_retweet": False,
-                "has_highlights": False,
-                "has_likes": False
-            },
-            "download": {
-                "max_concurrent": 16,
-                "async_enabled": True,
-                "enable_cache": True,
-                "auto_sync": False
-            },
-            "list_sync": {
-                "enabled": False,
-                "list_id": "",
-                "list_owner": "",
-                "list_slug": "",
-                "lists": []
-            },
-            "retry": {
-                "max_user_retries": 3,
-                "delay_seconds": 10
-            },
-            "logging": {
-                "verbose": False,
-                "log_file": ""
-            },
-            "tag_search": {
-                "tag": "",
-                "filter": "",
-                "download_count": 100,
-                "media_latest": False,
-                "text_mode": False
-            },
-            "text_download": {
-                "user_list": [],
-                "max_tweets": 500,
-                "request_delay": 2,
-                "max_retries": 3
-            },
-            "theme": "dark-glass"
-        }, indent=4)
+        data = json.dumps(default_config_data(), indent=4, ensure_ascii=False)
     with open(config_path, 'w', encoding='utf-8') as dst:
         dst.write(data)
         if not data.endswith('\n'):
@@ -777,6 +842,7 @@ def ensure_config_file(config_path=CONFIG_PATH, example_path=BUNDLED_CONFIG_EXAM
 def save_config_data(data):
     try:
         tmp_path = CONFIG_PATH + '.tmp'
+        backup_config_file(CONFIG_PATH)
         with open(tmp_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
             f.write('\n')

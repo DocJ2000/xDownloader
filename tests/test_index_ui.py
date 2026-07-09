@@ -129,6 +129,31 @@ class IndexUiTest(unittest.TestCase):
         ]:
             self.assertIn(expected, self.html)
 
+    def test_home_and_download_use_compact_workflow_layouts(self):
+        for expected in [
+            "home-viewport",
+            "home-summary-grid",
+            "home-insight-grid",
+            "download-control-strip",
+            "download-workflow-grid",
+            "download-column-main",
+            "download-column-side",
+            "download-primary-panel",
+            "download-secondary-panel",
+        ]:
+            self.assertIn(expected, self.html)
+
+        download_block = self.html.split("function initDownloadTab()", 1)[1]
+        user_position = download_block.index("dl_user_bulk_add")
+        control_position = download_block.index("download-control-strip")
+        options_position = download_block.index("dl_time_start")
+        list_position = download_block.index("dl_list_items")
+        log_position = download_block.index("download-log")
+        self.assertLess(control_position, user_position)
+        self.assertLess(user_position, options_position)
+        self.assertLess(options_position, list_position)
+        self.assertLess(list_position, log_position)
+
 
 if __name__ == "__main__":
     unittest.main()

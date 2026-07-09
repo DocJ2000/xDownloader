@@ -55,6 +55,12 @@ The recommended installer is `xDownloader-Setup-*.exe` from GitHub Releases.
 - No Python installation is required for the installer build.
 - The Settings tab lets users edit personal configuration and click `Apply` to use it immediately.
 
+### No-loss upgrades
+
+For installer users, install the new `xDownloader-Setup-*.exe` over the existing installation folder. Existing `config.json` and download progress are preserved by default, and the app writes `config.json.bak` before saving or migrating configuration.
+
+For source or portable zip users, keep your existing `config.json` next to `xdownloader.py` or `xDownloader.exe`, then replace the application files. Missing new settings are added automatically the next time the app starts.
+
 ### Feature Preview
 
 - Browse downloaded media locally without opening original tweet links.
@@ -143,6 +149,12 @@ xDownloader 是一个本地 X/Twitter 媒体下载器和浏览器。它可以按
 - Windows 会出现标准卸载入口，安装目录里也会有卸载程序。
 - 安装包版本不需要用户自己安装 Python。
 - 设置页可以填写个人配置，并点击 `Apply` 立即应用。
+
+### 无损升级
+
+安装包用户直接把新的 `xDownloader-Setup-*.exe` 覆盖安装到原安装目录即可。现有 `config.json` 和下载进度默认不会被卸载或覆盖，软件在保存或迁移配置前会写入 `config.json.bak` 作为备份。
+
+源码或便携 zip 用户升级时，保留 `xdownloader.py` 或 `xDownloader.exe` 旁边原有的 `config.json`，再替换应用文件。下次启动时，软件会自动补齐新增配置项。
 
 ### 功能预览
 
