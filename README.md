@@ -1,16 +1,45 @@
 # xDownloader
 
-![xDownloader preview](docs/assets/preview.svg)
+A bilingual local X/Twitter media downloader and browser with a Windows installer, timeline, media library, and hot-applied settings.
 
-## Download
+中英双语本地 X/Twitter 媒体下载与浏览器，支持 Windows 安装包、时间线、媒体库和前端即时配置。
 
-For most Windows users, download the installer from the latest GitHub Release:
+## Download / 下载
 
-[Download xDownloader Setup](https://github.com/DocJ2000/xDownloader/releases/latest)
+For most Windows users, download the installer from the latest GitHub Release.
+
+大多数 Windows 用户建议直接从最新 GitHub Release 下载安装包。
+
+[Download xDownloader Setup / 下载 xDownloader 安装包](https://github.com/DocJ2000/xDownloader/releases/latest)
 
 - Choose `xDownloader-Setup-*.exe` for the guided installer.
 - Choose `xDownloader-*-windows.zip` if you prefer a portable executable.
 - Choose GitHub's automatically generated source code archive if you want to build or modify the project.
+- 普通用户请选择 `xDownloader-Setup-*.exe`，这是带安装向导的版本。
+- 想免安装运行的用户请选择 `xDownloader-*-windows.zip`。
+- 想阅读、修改或自行构建项目的开发者，可以下载 GitHub 自动生成的源码包。
+
+## Interface Preview / 界面预览
+
+xDownloader provides a full English and Chinese bilingual interface. The language can be switched inside the app.
+
+xDownloader 提供完整中英文双语界面，用户可以在软件内一键切换语言。
+
+### Home - English
+
+![xDownloader Home English](docs/assets/preview-home-en.png)
+
+### 首页 - 中文
+
+![xDownloader 中文首页](docs/assets/preview-home-zh.png)
+
+### Settings - English
+
+![xDownloader Settings English](docs/assets/preview-settings-en.png)
+
+### 设置 - 中文
+
+![xDownloader 中文设置](docs/assets/preview-settings-zh.png)
 
 ## English
 
@@ -100,16 +129,6 @@ python -m compileall -q xdownloader.py xdownloader_app
 ### Contributing
 
 Contributions are welcome. Please open issues for bugs or product ideas, and use pull requests for code changes.
-
-## 下载
-
-大多数 Windows 用户建议直接从最新 GitHub Release 下载安装包：
-
-[下载 xDownloader 安装包](https://github.com/DocJ2000/xDownloader/releases/latest)
-
-- 普通用户请选择 `xDownloader-Setup-*.exe`，这是带安装向导的版本。
-- 想免安装运行的用户请选择 `xDownloader-*-windows.zip`。
-- 想阅读、修改或自行构建项目的开发者，可以下载 GitHub 自动生成的源码包。
 
 ## 中文
 

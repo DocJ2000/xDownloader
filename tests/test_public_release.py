@@ -11,6 +11,8 @@ class PublicReleaseTest(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn("## English", readme)
         self.assertIn("## 中文", readme)
+        self.assertIn("中英双语", readme)
+        self.assertIn("bilingual interface", readme.lower())
         self.assertIn("Start xDownloader.bat", readme)
         self.assertIn("xdownloader.py", readme)
 
@@ -87,10 +89,18 @@ class PublicReleaseTest(unittest.TestCase):
 
     def test_readme_has_preview_and_bilingual_commit_policy(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn("docs/assets/preview.svg", readme)
+        for preview in [
+            "docs/assets/preview-home-en.png",
+            "docs/assets/preview-home-zh.png",
+            "docs/assets/preview-settings-en.png",
+            "docs/assets/preview-settings-zh.png",
+        ]:
+            self.assertIn(preview, readme)
+            self.assertTrue((ROOT / preview).exists())
+        self.assertIn("Interface Preview / 界面预览", readme)
+        self.assertIn("Download xDownloader Setup / 下载 xDownloader 安装包", readme)
         self.assertIn("Bilingual commits", readme)
         self.assertIn("双语提交", readme)
-        self.assertTrue((ROOT / "docs" / "assets" / "preview.svg").exists())
 
 
 if __name__ == "__main__":
