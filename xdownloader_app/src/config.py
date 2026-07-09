@@ -25,6 +25,7 @@ class AppConfig:
     has_highlights: bool
     has_likes: bool
     has_video: bool
+    has_text: bool
     time_range: Tuple[int, int]
     image_format: str
     max_concurrent: int
@@ -115,6 +116,7 @@ def load_config(config_path: str = "config.json") -> AppConfig:
         has_highlights=has_highlights,
         has_likes=has_likes,
         has_video=mode.get('has_video', True),
+        has_text=mode.get('has_text', True),
         time_range=(start_ts, end_ts),
         time_range_str=time_range_str,
         image_format=raw.get('image_format', 'orig'),

@@ -18,7 +18,7 @@ CONFIG_PATH = os.path.join(PROJECT_ROOT, 'config.json')
 BUNDLED_CONFIG_EXAMPLE = os.path.join(getattr(sys, '_MEIPASS', PROJECT_ROOT), 'config.example.json')
 DOWNLOAD_ROOT = os.path.join(PROJECT_ROOT, 'downloads')
 PORT = 8765
-CURRENT_CONFIG_VERSION = 2
+CURRENT_CONFIG_VERSION = 3
 
 _BASE_DIR = ASSET_ROOT
 
@@ -714,6 +714,7 @@ def default_config_data():
         "image_format": "orig",
         "mode": {
             "has_video": True,
+            "has_text": True,
             "has_retweet": False,
             "has_highlights": False,
             "has_likes": False
@@ -986,6 +987,66 @@ def api_config():
         return jsonify({'ok': True})
 
 
+def normalize_user_list(users):
+    seen = set()
+    normalized = []
+    for item in users or []:
+        user = str(item or '').strip().lstrip('@')
+        key = user.lower()
+        if user and key not in seen:
+            seen.add(key)
+            normalized.append(user)
+    return normalized
+
+
+def find_unavailable_users(users):
+    if not users:
+        return []
+    import asyncio
+    import sys
+    sys.path.insert(0, APP_DIR)
+    from src.config import load_config
+    from src.client import create_http_client
+    from src.twitter_api import TwitterAPI, RateLimitError, TwitterAPIError
+
+    config = load_config(CONFIG_PATH)
+    client = create_http_client(config)
+    api = TwitterAPI(config, client)
+    loop = asyncio.new_event_loop()
+    unavailable = []
+    try:
+        for user in normalize_user_list(users):
+            try:
+                info = loop.run_until_complete(api.fetch_user_info(user))
+                if info is None:
+                    unavailable.append(user)
+            except (RateLimitError, TwitterAPIError):
+                continue
+            except Exception:
+                continue
+    finally:
+        client.close()
+        loop.close()
+    return unavailable
+
+
+@app.route('/api/users/prune', methods=['POST'])
+def api_users_prune():
+    body = request.get_json() or {}
+    data = load_config_data()
+    users = normalize_user_list(data.get('user_list') or [])
+    candidates = normalize_user_list(body.get('users') or find_unavailable_users(users))
+    if not body.get('confirm'):
+        return jsonify({'ok': True, 'candidates': candidates, 'removed': []})
+
+    candidate_set = {u.lower() for u in candidates}
+    kept = [u for u in users if u.lower() not in candidate_set]
+    removed = [u for u in users if u.lower() in candidate_set]
+    data['user_list'] = kept
+    save_config_data(data)
+    return jsonify({'ok': True, 'candidates': candidates, 'removed': removed})
+
+
 @app.route('/api/download/start', methods=['POST'])
 def api_download_start():
     global download_state
@@ -1237,11 +1298,14 @@ def _run_download(users):
                             csv_writer = CSVWriter(user_dir, user_info.name, user, config.time_range_str)
                         except Exception:
                             csv_writer = None
-                    qlog.info(f"Fetching text tweets for @{user}...")
+                    if config.has_text:
+                        qlog.info(f"Fetching text tweets for @{user}...")
+                    else:
+                        qlog.info(f"Text tweet download disabled for @{user}")
                     all_tweets = []
                     cursor = ''
                     page = 0
-                    max_tweets = config.text_max_tweets or 1000
+                    max_tweets = (config.text_max_tweets or 1000) if config.has_text else 0
                     tweet_count = 100
 
                     while download_state['running'] and len(all_tweets) < max_tweets:

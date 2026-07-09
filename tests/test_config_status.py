@@ -144,6 +144,44 @@ class ConfigStatusTest(unittest.TestCase):
         self.assertEqual("123", saved["list_sync"]["lists"][0]["list_id"])
         self.assertEqual("456", saved["list_sync"]["lists"][1]["list_id"])
 
+    def test_text_tweets_are_download_mode_option(self):
+        cfg = server.default_config_data()
+
+        self.assertIn("has_text", cfg["mode"])
+        self.assertTrue(cfg["mode"]["has_text"])
+
+    def test_prune_users_preview_does_not_modify_config(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = os.path.join(temp_dir, "config.json")
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump({"user_list": ["openai", "missing_user"]}, f)
+
+            with patch.object(server, "CONFIG_PATH", config_path), patch.object(
+                server, "find_unavailable_users", return_value=["missing_user"]
+            ):
+                response = app.test_client().post("/api/users/prune", json={"confirm": False})
+                saved = server.load_config_data()
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({"ok": True, "removed": [], "candidates": ["missing_user"]}, response.get_json())
+        self.assertEqual(["openai", "missing_user"], saved["user_list"])
+
+    def test_prune_users_requires_confirmation_before_removing(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = os.path.join(temp_dir, "config.json")
+            with open(config_path, "w", encoding="utf-8") as f:
+                json.dump({"user_list": ["openai", "missing_user", "renamed_user"]}, f)
+
+            with patch.object(server, "CONFIG_PATH", config_path), patch.object(
+                server, "find_unavailable_users", return_value=["missing_user", "renamed_user"]
+            ):
+                response = app.test_client().post("/api/users/prune", json={"confirm": True})
+                saved = server.load_config_data()
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(["missing_user", "renamed_user"], response.get_json()["removed"])
+        self.assertEqual(["openai"], saved["user_list"])
+
     def test_config_migration_preserves_values_adds_defaults_and_backs_up(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = os.path.join(temp_dir, "config.json")

@@ -46,37 +46,60 @@ class IndexUiTest(unittest.TestCase):
         self.assertIn("cfg_save_path", self.html)
         self.assertIn("browseFolder", self.html)
 
-    def test_settings_keeps_only_foundational_configuration(self):
+    def test_settings_keeps_account_storage_and_download_configuration(self):
         for control_id in [
             "cfg_cookie",
             "cfg_bearer_token",
             "cfg_save_path",
             "cfg_proxy",
+            "cfg_time_start",
+            "cfg_time_end",
+            "cfg_image_format",
+            "cfg_has_video",
+            "cfg_has_text",
+            "cfg_has_retweet",
+            "cfg_has_highlights",
+            "cfg_has_likes",
+            "cfg_max_concurrent",
+            "cfg_enable_cache",
+            "cfg_async_enabled",
+            "cfg_download_auto_sync",
             "cfg_verbose",
             "cfg_log_file",
             "cfg_theme",
         ]:
             self.assertIn(control_id, self.html)
-
-        settings_block = self.html.split("async function initSettings()", 1)[1].split("function readLinesFromField", 1)[0]
-        for download_only_control in [
-            "cfg_time_start",
-            "cfg_time_end",
-            "cfg_has_video",
-            "cfg_download_auto_sync",
-            "cfg_tag_search_tag",
-            "cfg_text_user_list",
-            "cfg_list_id",
-        ]:
-            self.assertNotIn(download_only_control, settings_block)
+        self.assertIn("buildSettingsTimeRange()", self.html)
+        self.assertIn("setSettingsTimeRangeControls", self.html)
 
     def test_settings_use_apply_language(self):
         self.assertIn("applyConfig", self.html)
         self.assertIn("Applied", self.html)
         self.assertIn("应用", self.html)
 
-    def test_download_tab_owns_download_options(self):
-        for control_id in [
+    def test_download_tab_is_only_list_and_live_download_workflow(self):
+        download_block = self.html.split("function initDownloadTab()", 1)[1].split("function normalizeUsers", 1)[0]
+        for expected in [
+            "download-list-panel",
+            "download-live-panel",
+            "dl_user_bulk_add",
+            "dl_user_table",
+            "dl_list_items",
+            "syncAllLists",
+            "downloadUserList",
+            "dedupeUsers",
+            "pruneUnavailableUsers",
+            "btnStartDl",
+            "btnPauseDl",
+            "btnTerminateDl",
+            "dlProgress",
+            "dlLog",
+        ]:
+            self.assertIn(expected, download_block)
+        self.assertIn("confirm(", self.html)
+        self.assertIn("/api/users/prune", self.html)
+
+        for removed_control in [
             'id="dl_time_start"',
             'id="dl_time_end"',
             'id="dl_image_format"',
@@ -89,10 +112,11 @@ class IndexUiTest(unittest.TestCase):
             'id="dl_download_auto_sync"',
             'id="dl_tag_search_tag"',
             'id="dl_text_user_list"',
+            "tagSearch",
+            "textDownload",
+            "filterUsers",
         ]:
-            self.assertIn(control_id, self.html)
-        self.assertIn('type="date"', self.html)
-        self.assertIn("buildDownloadTimeRange()", self.html)
+            self.assertNotIn(removed_control, download_block)
 
     def test_download_control_supports_pause_resume_and_terminate(self):
         for expected in [
@@ -107,13 +131,13 @@ class IndexUiTest(unittest.TestCase):
 
     def test_user_list_manager_supports_reviewing_large_lists(self):
         for expected in [
-            "dl_user_filter",
             "dl_user_bulk_add",
             "dl_user_table",
             "normalizeUsers",
             "renderUserListManager",
             "dedupeUsers",
-            "clearUsers",
+            "downloadUserList",
+            "pruneUnavailableUsers",
         ]:
             self.assertIn(expected, self.html)
 
@@ -136,22 +160,19 @@ class IndexUiTest(unittest.TestCase):
             "home-insight-grid",
             "download-control-strip",
             "download-workflow-grid",
-            "download-column-main",
-            "download-column-side",
-            "download-primary-panel",
-            "download-secondary-panel",
+            "download-list-panel",
+            "download-live-panel",
         ]:
             self.assertIn(expected, self.html)
 
         download_block = self.html.split("function initDownloadTab()", 1)[1]
         user_position = download_block.index("dl_user_bulk_add")
         control_position = download_block.index("download-control-strip")
-        options_position = download_block.index("dl_time_start")
         list_position = download_block.index("dl_list_items")
         log_position = download_block.index("download-log")
-        self.assertLess(control_position, user_position)
-        self.assertLess(user_position, options_position)
-        self.assertLess(options_position, list_position)
+        self.assertLess(user_position, list_position)
+        self.assertLess(list_position, control_position)
+        self.assertLess(control_position, log_position)
         self.assertLess(list_position, log_position)
 
 

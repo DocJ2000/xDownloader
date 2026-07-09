@@ -378,13 +378,15 @@ body {
 
 
 /* ===== Download Tab ===== */
-.download-layout { height: 100%; min-height: 0; padding: 12px 16px; overflow: hidden; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 10px; }
+.download-layout { height: 100%; min-height: 0; padding: 12px 16px; overflow: hidden; display: grid; grid-template-rows: minmax(0, 1fr); gap: 10px; }
 .download-control-strip {
     display: grid; grid-template-columns: minmax(260px, auto) minmax(320px, 1fr) auto;
     gap: 10px; align-items: center; background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 10px;
 }
-.download-workflow-grid { min-height: 0; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr); grid-template-rows: minmax(0, 1fr) auto; gap: 12px; overflow: hidden; }
+.download-workflow-grid { min-height: 0; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr); gap: 12px; overflow: hidden; }
+.download-list-panel, .download-live-panel { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
+.download-live-panel .download-log { flex: 1; max-height: none; }
 .download-column-main, .download-column-side { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
 .download-log-panel { grid-column: 1 / -1; min-height: 0; }
 .download-primary-panel, .download-secondary-panel { background: transparent; }
@@ -768,6 +770,7 @@ const APP_TEXT = {
         timeRange: '时间范围',
         imageFormat: '图片格式',
         downloadVideos: '下载视频',
+        downloadTextTweets: '下载文本推文',
         downloadRetweets: '下载转推',
         highlights: '高亮推文',
         likes: '喜欢内容',
@@ -793,7 +796,13 @@ const APP_TEXT = {
         filterUsers: '筛选用户名',
         filterUsersPlaceholder: '输入关键词过滤名单',
         addUsers: '添加到名单',
+        downloadUserList: '下载用户名单',
         dedupeUsers: '去重整理',
+        pruneUnavailableUsers: '去掉不存在用户',
+        pruneConfirm: '将删除 {count} 个可能已注销或改名的用户：{users}。这个操作会修改名单，是否继续？',
+        pruneNoneFound: '没有发现明确不存在的用户',
+        pruneRemoved: '已移除 {count} 个用户',
+        pruneChecking: '正在检查用户状态...',
         clearUsers: '清空名单',
         userManagerHelp: '支持批量粘贴，每行一个用户名。系统会自动去重并去掉 @。',
         addList: '添加列表',
@@ -941,6 +950,7 @@ const APP_TEXT = {
         timeRange: 'Time range',
         imageFormat: 'Image format',
         downloadVideos: 'Download videos',
+        downloadTextTweets: 'Download text tweets',
         downloadRetweets: 'Download retweets',
         highlights: 'Highlights',
         likes: 'Likes',
@@ -966,7 +976,13 @@ const APP_TEXT = {
         filterUsers: 'Filter users',
         filterUsersPlaceholder: 'Type to filter the list',
         addUsers: 'Add users',
+        downloadUserList: 'Download user list',
         dedupeUsers: 'Deduplicate',
+        pruneUnavailableUsers: 'Remove unavailable users',
+        pruneConfirm: 'Remove {count} users that may be deleted, suspended, or renamed: {users}. This changes the list. Continue?',
+        pruneNoneFound: 'No clearly unavailable users found',
+        pruneRemoved: 'Removed {count} users',
+        pruneChecking: 'Checking user status...',
         clearUsers: 'Clear users',
         userManagerHelp: 'Paste many usernames at once, one per line. The app removes @ and duplicates automatically.',
         addList: 'Add list',
@@ -1927,58 +1943,43 @@ let listSyncItems = [];
 function initDownloadTab() {
     const container = document.getElementById('tab-download');
     container.innerHTML = `<div class="download-layout">
-        <div class="download-control-strip">
-            <div class="download-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                <button class="btn btn-primary" onclick="startDownload()" id="btnStartDl">${t('startDownload')}</button>
-                <button class="btn btn-secondary" onclick="pauseDownload()" id="btnPauseDl" style="display:none">${t('pauseDownload')}</button>
-                <button class="btn btn-danger" onclick="terminateDownload()" id="btnTerminateDl">${t('terminateDownload')}</button>
-                <button class="btn btn-secondary" onclick="saveDownloadSettings()">${t('saveSettings')}</button>
-            </div>
-            <div>
-                <div class="progress-bar-wrap" style="margin-bottom:6px"><div class="progress-bar-fill" id="dlProgress" style="width:0%"></div></div>
-                <p style="font-size:12px;color:var(--text-dim);margin:0">${t('downloadContentHint')}</p>
-                <div id="downloadQueuePanel" class="download-status-grid">
-                    <div class="queue-chip"><span>${t('queueTotal')}</span><strong id="qTotal">0</strong></div>
-                    <div class="queue-chip"><span>${t('queueDone')}</span><strong id="qDone">0</strong></div>
-                    <div class="queue-chip"><span>${t('queueLeft')}</span><strong id="qLeft">0</strong></div>
-                    <div class="queue-chip"><span>${t('queueState')}</span><strong id="qState">--</strong></div>
-                </div>
-            </div>
-            <div id="dlLiveStats" style="display:none;font-size:12px;color:var(--text-dim);background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:6px 10px;white-space:nowrap"></div>
-        </div>
         <div class="download-workflow-grid">
-            <div class="download-column-main">
+            <div class="download-list-panel">
                 <div class="form-section download-primary-panel"><h3>${t('userListTitle')} <span id="dlUserCount" style="font-weight:400;font-size:13px;color:var(--text-dim)"></span></h3>
-                    <div class="download-user-grid"><div class="form-group"><label>${t('bulkAddUsers')}</label><textarea id="dl_user_bulk_add" placeholder="openai&#10;github&#10;elonmusk"></textarea></div>
-                    <div class="form-group"><label>${t('filterUsers')}</label><input id="dl_user_filter" placeholder="${t('filterUsersPlaceholder')}" oninput="renderUserListManager()">
-                        <div class="download-side-actions" style="margin-top:8px"><button class="btn btn-secondary" onclick="applyBulkUsers()">${t('addUsers')}</button><button class="btn btn-secondary" onclick="dedupeUsers()">${t('dedupeUsers')}</button><button class="btn btn-danger" onclick="clearUsers()">${t('clearUsers')}</button></div>
-                        <div class="field-help">${t('userManagerHelp')}</div></div></div>
-                    <div id="dl_user_table" class="compact-list" style="max-height:100px;overflow:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px"></div>
-                </div>
-                <div class="form-section download-primary-panel"><h3>${t('options')}</h3>
-                    <div class="download-options-grid"><div class="form-group"><label>${t('timeRange')}</label><input id="dl_time_start" type="date"></div><div class="form-group"><label>&nbsp;</label><input id="dl_time_end" type="date"></div><div class="form-group"><label>${t('concurrencyShort')}</label><input id="dlConcurrency" type="number" min="1" max="32" value="16"></div></div>
-                    <div class="download-options-grid" style="margin-top:10px"><div class="form-group"><label>${t('imageFormat')}</label><select id="dl_image_format"><option value="orig">orig</option><option value="jpg">jpg</option><option value="png">png</option></select></div><div class="form-group"><label>${t('cache')}</label><select id="dl_enable_cache"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select></div><div class="form-group"><label>${t('asyncDownload')}</label><select id="dl_async_enabled"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select></div></div>
-                    <div class="download-options" style="margin:10px 0 0"><label><input type="checkbox" id="dl_has_video"> ${t('downloadVideos')}</label><label><input type="checkbox" id="dl_has_retweet"> ${t('downloadRetweets')}</label><label><input type="checkbox" id="dl_has_highlights"> ${t('highlights')}</label><label><input type="checkbox" id="dl_has_likes"> ${t('likes')}</label><label><select id="dl_download_auto_sync"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select> ${t('downloadAutoSync')}</label></div>
-                </div>
-                </div>
-            <div class="download-column-side">
-                <div class="form-section download-secondary-panel"><h3>${t('syncSettings')}</h3>
-                    <div class="field-help">${t('listSyncHelp')}</div>
-                    <div id="dl_list_items"></div>
-                    <div class="download-side-actions"><button class="btn btn-secondary" onclick="addListSyncItem()">${t('addList')}</button><button class="btn btn-primary" onclick="syncAllLists()" id="btnSyncAll">${t('syncAllLists')}</button></div>
+                    <div class="download-user-grid">
+                        <div class="form-group"><label>${t('bulkAddUsers')}</label><textarea id="dl_user_bulk_add" placeholder="openai&#10;github&#10;elonmusk"></textarea></div>
+                        <div class="form-group"><label>${t('syncSettings')}</label><div class="field-help">${t('listSyncHelp')}</div><div id="dl_list_items"></div></div>
+                    </div>
+                    <div class="download-side-actions" style="margin-bottom:10px">
+                        <button class="btn btn-secondary" onclick="applyBulkUsers()">${t('addUsers')}</button>
+                        <button class="btn btn-secondary" onclick="downloadUserList()">${t('downloadUserList')}</button>
+                        <button class="btn btn-secondary" onclick="dedupeUsers()">${t('dedupeUsers')}</button>
+                        <button class="btn btn-danger" onclick="pruneUnavailableUsers()">${t('pruneUnavailableUsers')}</button>
+                        <button class="btn btn-primary" onclick="syncAllLists()" id="btnSyncAll">${t('syncAllLists')}</button>
+                    </div>
+                    <div id="dl_user_table" class="compact-list" style="height:220px;overflow:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px"></div>
                     <div id="dlSyncResult" style="margin-top:8px;font-size:13px;color:var(--text-dim)"></div>
                 </div>
-                <details class="form-section download-secondary-panel download-details"><summary>${t('tagSearch')}</summary>
-                    <div class="form-row"><div class="form-group"><label>${t('tag')}</label><input id="dl_tag_search_tag"></div><div class="form-group"><label>${t('filter')}</label><input id="dl_tag_search_filter"></div></div>
-                    <div class="form-row"><div class="form-group"><label>${t('downloadCount')}</label><input id="dl_tag_search_count" type="number" min="1" value="100"></div><div class="form-group"><label>${t('mediaLatest')}</label><select id="dl_tag_search_media_latest"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select></div></div>
-                    <div class="form-group"><label>${t('textMode')}</label><select id="dl_tag_search_text_mode"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select></div>
-                </details>
-                <details class="form-section download-secondary-panel download-details"><summary>${t('textDownload')}</summary>
-                    <div class="form-group"><label>${t('textUsers')}</label><textarea id="dl_text_user_list" placeholder="openai&#10;github"></textarea></div>
-                    <div class="download-options-grid"><div class="form-group"><label>${t('maxTweets')}</label><input id="dl_text_max_tweets" type="number" min="0" value="500"></div><div class="form-group"><label>${t('requestDelay')}</label><input id="dl_text_request_delay" type="number" min="0" step="0.1" value="2"></div><div class="form-group"><label>${t('maxRetries')}</label><input id="dl_text_max_retries" type="number" min="0" value="3"></div></div>
-                </details>
             </div>
-            <div class="download-log-panel">
+            <div class="download-live-panel">
+                <div class="download-control-strip">
+                    <div class="download-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="startDownload()" id="btnStartDl">${t('startDownload')}</button>
+                        <button class="btn btn-secondary" onclick="pauseDownload()" id="btnPauseDl" style="display:none">${t('pauseDownload')}</button>
+                        <button class="btn btn-danger" onclick="terminateDownload()" id="btnTerminateDl">${t('terminateDownload')}</button>
+                    </div>
+                    <div>
+                        <div class="progress-bar-wrap" style="margin-bottom:6px"><div class="progress-bar-fill" id="dlProgress" style="width:0%"></div></div>
+                        <p style="font-size:12px;color:var(--text-dim);margin:0">${t('downloadContentHint')}</p>
+                        <div id="downloadQueuePanel" class="download-status-grid">
+                            <div class="queue-chip"><span>${t('queueTotal')}</span><strong id="qTotal">0</strong></div>
+                            <div class="queue-chip"><span>${t('queueDone')}</span><strong id="qDone">0</strong></div>
+                            <div class="queue-chip"><span>${t('queueLeft')}</span><strong id="qLeft">0</strong></div>
+                            <div class="queue-chip"><span>${t('queueState')}</span><strong id="qState">--</strong></div>
+                        </div>
+                    </div>
+                    <div id="dlLiveStats" style="display:none;font-size:12px;color:var(--text-dim);background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:6px 10px;white-space:nowrap"></div>
+                </div>
                 <div class="download-log" id="dlLog"></div>
                 <div id="dlStatsResult" style="font-size:14px"></div>
             </div>
@@ -1990,26 +1991,6 @@ function initDownloadTab() {
         renderUserListManager();
         listSyncItems = normalizeListSyncItems(cfg.list_sync);
         renderListSyncItems();
-        const mc = cfg.download?.max_concurrent || 16;
-        document.getElementById('dlConcurrency').value = mc;
-        setDownloadTimeRangeControls(cfg.time_range || '2015-01-01:2030-01-01');
-        document.getElementById('dl_image_format').value = cfg.image_format || 'orig';
-        document.getElementById('dl_has_video').checked = !cfg.mode || cfg.mode.has_video !== false;
-        document.getElementById('dl_has_retweet').checked = !!(cfg.mode && cfg.mode.has_retweet);
-        document.getElementById('dl_has_highlights').checked = !!(cfg.mode && cfg.mode.has_highlights);
-        document.getElementById('dl_has_likes').checked = !!(cfg.mode && cfg.mode.has_likes);
-        document.getElementById('dl_enable_cache').value = !cfg.download || cfg.download.enable_cache !== false ? 'true' : 'false';
-        document.getElementById('dl_async_enabled').value = !cfg.download || cfg.download.async_enabled !== false ? 'true' : 'false';
-        document.getElementById('dl_download_auto_sync').value = cfg.download && cfg.download.auto_sync ? 'true' : 'false';
-        document.getElementById('dl_tag_search_tag').value = (cfg.tag_search && cfg.tag_search.tag) || '';
-        document.getElementById('dl_tag_search_filter').value = (cfg.tag_search && cfg.tag_search.filter) || '';
-        document.getElementById('dl_tag_search_count').value = (cfg.tag_search && cfg.tag_search.download_count) || 100;
-        document.getElementById('dl_tag_search_media_latest').value = cfg.tag_search && cfg.tag_search.media_latest ? 'true' : 'false';
-        document.getElementById('dl_tag_search_text_mode').value = cfg.tag_search && cfg.tag_search.text_mode ? 'true' : 'false';
-        document.getElementById('dl_text_user_list').value = ((cfg.text_download && cfg.text_download.user_list) || []).join('\n');
-        document.getElementById('dl_text_max_tweets').value = (cfg.text_download && cfg.text_download.max_tweets) || 500;
-        document.getElementById('dl_text_request_delay').value = (cfg.text_download && cfg.text_download.request_delay) || 2;
-        document.getElementById('dl_text_max_retries').value = (cfg.text_download && cfg.text_download.max_retries) || 3;
     });
 }
 
@@ -2028,11 +2009,9 @@ function normalizeUsers(input) {
 }
 
 function renderUserListManager() {
-    const filter = (document.getElementById('dl_user_filter')?.value || '').trim().toLowerCase();
     const el = document.getElementById('dl_user_table');
     if (!el) return;
-    const visible = downloadUsers.filter(u => !filter || u.toLowerCase().includes(filter));
-    el.innerHTML = visible.length ? visible.map(u => '<div class="compact-row"><div><div class="compact-title">@' + esc(u) + '</div></div><button class="btn btn-secondary" onclick="removeUserFromList(\'' + esc(u) + '\')">×</button></div>').join('') : '<div class="empty-state">' + t('noMatchingUsers') + '</div>';
+    el.innerHTML = downloadUsers.length ? downloadUsers.map(u => '<div class="compact-row"><div><div class="compact-title">@' + esc(u) + '</div></div><button class="btn btn-secondary" onclick="removeUserFromList(\'' + esc(u) + '\')">×</button></div>').join('') : '<div class="empty-state">' + t('noMatchingUsers') + '</div>';
     updateUserCount();
 }
 
@@ -2053,14 +2032,22 @@ function dedupeUsers() {
     renderUserListManager();
 }
 
-function clearUsers() {
-    downloadUsers = [];
-    renderUserListManager();
-}
-
 function removeUserFromList(user) {
     downloadUsers = downloadUsers.filter(u => u !== user);
     renderUserListManager();
+}
+
+function downloadUserList() {
+    const text = normalizeUsers(downloadUsers).join('\n') + '\n';
+    const blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'xdownloader-users.txt';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
 }
 
 function normalizeListSyncItems(listSync) {
@@ -2107,51 +2094,10 @@ function removeListSyncItem(index) {
     renderListSyncItems();
 }
 
-function setDownloadTimeRangeControls(value) {
-    const parts = (value || '2015-01-01:2030-01-01').split(':');
-    document.getElementById('dl_time_start').value = parts[0] || '2015-01-01';
-    document.getElementById('dl_time_end').value = parts[1] || '2030-01-01';
-}
-
-function buildDownloadTimeRange() {
-    let start = document.getElementById('dl_time_start').value || '2015-01-01';
-    let end = document.getElementById('dl_time_end').value || '2030-01-01';
-    if (start > end) {
-        const tmp = start;
-        start = end;
-        end = tmp;
-        document.getElementById('dl_time_start').value = start;
-        document.getElementById('dl_time_end').value = end;
-    }
-    return start + ':' + end;
-}
-
 async function saveDownloadSettings() {
-    const v = parseInt(document.getElementById('dlConcurrency').value) || 16;
-    const val = Math.max(1, Math.min(32, v));
-    document.getElementById('dlConcurrency').value = val;
     const lists = collectListSyncItems();
     const payload = {
         user_list: downloadUsers,
-        time_range: buildDownloadTimeRange(),
-        image_format: document.getElementById('dl_image_format').value,
-        'mode.has_video': document.getElementById('dl_has_video').checked,
-        'mode.has_retweet': document.getElementById('dl_has_retweet').checked,
-        'mode.has_highlights': document.getElementById('dl_has_highlights').checked,
-        'mode.has_likes': document.getElementById('dl_has_likes').checked,
-        'download.max_concurrent': val,
-        'download.enable_cache': document.getElementById('dl_enable_cache').value === 'true',
-        'download.async_enabled': document.getElementById('dl_async_enabled').value === 'true',
-        'download.auto_sync': document.getElementById('dl_download_auto_sync').value === 'true',
-        'tag_search.tag': document.getElementById('dl_tag_search_tag').value.trim(),
-        'tag_search.filter': document.getElementById('dl_tag_search_filter').value.trim(),
-        'tag_search.download_count': Math.max(1, parseInt(document.getElementById('dl_tag_search_count').value) || 100),
-        'tag_search.media_latest': document.getElementById('dl_tag_search_media_latest').value === 'true',
-        'tag_search.text_mode': document.getElementById('dl_tag_search_text_mode').value === 'true',
-        'text_download.user_list': readLinesFromElement('dl_text_user_list'),
-        'text_download.max_tweets': Math.max(0, parseInt(document.getElementById('dl_text_max_tweets').value) || 0),
-        'text_download.request_delay': Math.max(0, parseFloat(document.getElementById('dl_text_request_delay').value) || 0),
-        'text_download.max_retries': Math.max(0, parseInt(document.getElementById('dl_text_max_retries').value) || 0),
         'list_sync.enabled': lists.some(item => item.enabled !== false),
         'list_sync.lists': lists,
         'list_sync.list_id': lists[0]?.list_id || '',
@@ -2367,7 +2313,7 @@ function zh(s) {
         account: '&#x8d26;&#x53f7;&#x8ba4;&#x8bc1;', replace: '&#x66ff;&#x6362;', users: '&#x4e0b;&#x8f7d;&#x7528;&#x6237;',
         userList: '&#x7528;&#x6237;&#x5217;&#x8868;', network: '&#x7f51;&#x7edc;&#x4e0e;&#x4fdd;&#x5b58;', savePath: '&#x4fdd;&#x5b58;&#x8def;&#x5f84;',
         proxy: '&#x4ee3;&#x7406;&#x5730;&#x5740;', options: '&#x4e0b;&#x8f7d;&#x9009;&#x9879;', timeRange: '&#x65f6;&#x95f4;&#x8303;&#x56f4;',
-        imageFormat: '&#x56fe;&#x7247;&#x683c;&#x5f0f;', concurrency: '&#x5e76;&#x53d1;&#x6570;', video: '&#x4e0b;&#x8f7d;&#x89c6;&#x9891;',
+        imageFormat: '&#x56fe;&#x7247;&#x683c;&#x5f0f;', concurrency: '&#x5e76;&#x53d1;&#x6570;', video: '&#x4e0b;&#x8f7d;&#x89c6;&#x9891;', textTweets: '&#x4e0b;&#x8f7d;&#x6587;&#x672c;&#x63a8;&#x6587;',
         retweet: '&#x4e0b;&#x8f7d;&#x8f6c;&#x63a8;', highlights: '&#x9ad8;&#x4eae;&#x63a8;&#x6587;', likes: '&#x559c;&#x6b22;&#x5185;&#x5bb9;',
         cache: '&#x7f13;&#x5b58;', asyncDownload: '&#x5f02;&#x6b65;&#x4e0b;&#x8f7d;', enabled: '&#x542f;&#x7528;', disabled: '&#x7981;&#x7528;',
         listSync: '&#x5217;&#x8868;&#x540c;&#x6b65;', listId: '&#x5217;&#x8868; ID', listOwner: '&#x5217;&#x8868;&#x6240;&#x6709;&#x8005;', listSlug: '&#x5217;&#x8868;&#x77ed;&#x540d;', listSyncHelp: '&#x4f18;&#x5148;&#x4f7f;&#x7528;&#x5217;&#x8868; ID&#x3002;&#x53ef;&#x5728; X &#x6253;&#x5f00;&#x5217;&#x8868;&#x9875;&#xff0c;&#x4ece;&#x7f51;&#x5740; /i/lists/1234567890 &#x4e2d;&#x590d;&#x5236;&#x6570;&#x5b57; ID&#x3002;', autoSync: '&#x81ea;&#x52a8;&#x540c;&#x6b65;', advanced: '&#x9ad8;&#x7ea7;',
@@ -2379,7 +2325,7 @@ function zh(s) {
         browseFolder: '&#x6d4f;&#x89c8;', chooseFolderFailed: '&#x6253;&#x5f00;&#x6587;&#x4ef6;&#x5939;&#x9009;&#x62e9;&#x5668;&#x5931;&#x8d25;',
         tagSearch: '&#x6807;&#x7b7e;&#x641c;&#x7d22;', tag: '&#x5173;&#x952e;&#x8bcd;', filter: '&#x8fc7;&#x6ee4;&#x6761;&#x4ef6;', downloadCount: '&#x4e0b;&#x8f7d;&#x6570;&#x91cf;', mediaLatest: '&#x4f18;&#x5148;&#x6700;&#x65b0;&#x5a92;&#x4f53;', textMode: '&#x6587;&#x672c;&#x6a21;&#x5f0f;',
         textDownload: '&#x6587;&#x672c;&#x4e0b;&#x8f7d;', textUsers: '&#x6587;&#x672c;&#x7528;&#x6237;', maxTweets: '&#x6700;&#x5927;&#x63a8;&#x6587;&#x6570;', requestDelay: '&#x8bf7;&#x6c42;&#x95f4;&#x9694;', maxRetries: '&#x6700;&#x5927;&#x91cd;&#x8bd5;', verboseLog: '&#x8be6;&#x7ec6;&#x65e5;&#x5fd7;', downloadAutoSync: '&#x4e0b;&#x8f7d;&#x65f6;&#x81ea;&#x52a8;&#x540c;&#x6b65;',
-        setupTitle: '&#x914d;&#x7f6e;&#x4e2d;&#x5fc3;', setupCopy: '&#x8fd9;&#x91cc;&#x53ea;&#x653e;&#x57fa;&#x7840;&#x914d;&#x7f6e;&#xff1a;&#x8d26;&#x53f7;&#x51ed;&#x8bc1;&#x3001;&#x4fdd;&#x5b58;&#x8def;&#x5f84;&#x3001;&#x4ee3;&#x7406;&#x3001;&#x65e5;&#x5fd7;&#x548c;&#x4e3b;&#x9898;&#x3002;&#x4e0b;&#x8f7d;&#x9009;&#x9879;&#x5df2;&#x79fb;&#x5230;&#x4e0b;&#x8f7d;&#x9875;&#x3002;',
+        setupTitle: '&#x914d;&#x7f6e;&#x4e2d;&#x5fc3;', setupCopy: '&#x8fd9;&#x91cc;&#x653e;&#x4e0b;&#x8f7d;&#x524d;&#x7684;&#x5168;&#x5c40;&#x914d;&#x7f6e;&#xff1a;&#x8d26;&#x53f7;&#x51ed;&#x8bc1;&#x3001;&#x4fdd;&#x5b58;&#x8def;&#x5f84;&#x3001;&#x4e0b;&#x8f7d;&#x5185;&#x5bb9;&#x3001;&#x901f;&#x5ea6;&#x548c;&#x4e3b;&#x9898;&#x3002;',
         stepAccount: '&#x586b;&#x8d26;&#x53f7;', stepPath: '&#x9009;&#x8def;&#x5f84;', stepDownload: '&#x5f00;&#x59cb;&#x4e0b;&#x8f7d;',
         checkNow: '&#x7acb;&#x5373;&#x68c0;&#x6d4b;', configPassed: '&#x914d;&#x7f6e;&#x68c0;&#x67e5;&#x901a;&#x8fc7;', configMissing: '&#x914d;&#x7f6e;&#x8fd8;&#x7f3a;&#x9879;&#x76ee;',
         cookieHelp: '&#x4ece;&#x6d4f;&#x89c8;&#x5668;&#x767b;&#x5f55; X &#x540e;&#x590d;&#x5236;&#x5b8c;&#x6574; Cookie&#x3002;&#x672a;&#x70b9;&#x51fb;&#x66ff;&#x6362;&#x65f6;&#xff0c;&#x9690;&#x85cf;&#x503c;&#x4e0d;&#x4f1a;&#x8986;&#x76d6;&#x539f;&#x914d;&#x7f6e;&#x3002;',
@@ -2402,6 +2348,7 @@ function zh(s) {
             imageFormat: 'Image format',
             concurrency: 'Concurrency',
             video: 'Download videos',
+            textTweets: 'Download text tweets',
             retweet: 'Download retweets',
             highlights: 'Highlights',
             likes: 'Likes',
@@ -2450,7 +2397,7 @@ function zh(s) {
             verboseLog: 'Verbose log',
             downloadAutoSync: 'Auto sync while downloading',
             setupTitle: 'Configuration',
-            setupCopy: 'Only foundational settings live here: account credentials, save path, proxy, logging, and theme. Download options now live on the Download tab.',
+            setupCopy: 'Global pre-download settings live here: account credentials, save path, content choices, speed, logging, and theme.',
             stepAccount: 'Account',
             stepPath: 'Path',
             stepDownload: 'Download',
@@ -2504,10 +2451,27 @@ async function initSettings() {
         + '<div class="form-group"><label>Bearer Token</label><div class="secret-row"><textarea id="cfg_bearer_token" data-secret="1">' + esc(cfg.bearer_token || '') + '</textarea><button class="btn btn-secondary" onclick="clearSecretField(\'cfg_bearer_token\')">' + zh('replace') + '</button></div><div class="field-help">' + zh('tokenHelp') + '</div></div></div>'
         + '<div class="form-section"><h3>' + zh('network') + '</h3><div class="form-group"><label>' + zh('savePath') + '</label><div class="secret-row"><input id="cfg_save_path" value="' + esc(cfg.save_path || '') + '" placeholder="downloads"><button class="btn btn-secondary" type="button" onclick="pickSavePath()">' + zh('browseFolder') + '</button></div></div><div class="form-group"><label>' + zh('proxy') + '</label><input id="cfg_proxy" value="' + esc(cfg.proxy || '') + '" placeholder="http://127.0.0.1:7890"><div class="field-help">' + zh('proxyHelp') + '</div></div></div>'
         + '</div><div class="settings-side">'
+        + '<div class="form-section"><h3>' + zh('options') + '</h3>'
+        + '<div class="form-row"><div class="form-group"><label>' + zh('timeRange') + '</label><input id="cfg_time_start" type="date"></div><div class="form-group"><label>&nbsp;</label><input id="cfg_time_end" type="date"></div></div>'
+        + '<div class="form-row"><div class="form-group"><label>' + zh('imageFormat') + '</label><select id="cfg_image_format"><option value="orig">orig</option><option value="jpg">jpg</option><option value="png">png</option></select></div><div class="form-group"><label>' + zh('concurrency') + '</label><input id="cfg_max_concurrent" type="number" min="1" max="32"></div></div>'
+        + '<div class="download-options"><label><input type="checkbox" id="cfg_has_video"> ' + zh('video') + '</label><label><input type="checkbox" id="cfg_has_text"> ' + zh('textTweets') + '</label><label><input type="checkbox" id="cfg_has_retweet"> ' + zh('retweet') + '</label><label><input type="checkbox" id="cfg_has_highlights"> ' + zh('highlights') + '</label><label><input type="checkbox" id="cfg_has_likes"> ' + zh('likes') + '</label></div>'
+        + '<div class="form-row"><div class="form-group"><label>' + zh('cache') + '</label><select id="cfg_enable_cache"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('asyncDownload') + '</label><select id="cfg_async_enabled"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
+        + '<div class="form-group"><label>' + zh('downloadAutoSync') + '</label><select id="cfg_download_auto_sync"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
         + '<div class="form-section"><h3>' + zh('advanced') + '</h3><div class="form-row"><div class="form-group"><label>' + zh('userRetries') + '</label><input id="cfg_max_user_retries" type="number" min="0"></div><div class="form-group"><label>' + zh('retryDelay') + '</label><input id="cfg_retry_delay" type="number" min="0"></div></div><div class="form-group"><label>' + zh('verboseLog') + '</label><select id="cfg_verbose"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('logFile') + '</label><input id="cfg_log_file" value="' + esc((cfg.logging && cfg.logging.log_file) || '') + '" placeholder="' + zh('logPlaceholder') + '"></div><div class="form-group"><label>' + zh('theme') + '</label><select id="cfg_theme" onchange="document.documentElement.dataset.theme=this.value"><option value="dark-glass">' + zh('darkTheme') + '</option><option value="magazine">' + zh('lightTheme') + '</option></select></div></div>'
         + '</div></div><div class="settings-actions"><button class="btn btn-primary" onclick="saveSettings()">' + zh('applyConfig') + '</button><button class="btn btn-secondary" onclick="checkConfigNow()">' + zh('checkNow') + '</button><button class="btn btn-secondary" onclick="initSettings()">' + zh('reload') + '</button></div></div>';
 
     document.getElementById('cfg_theme').value = theme;
+    setSettingsTimeRangeControls(cfg.time_range || '2015-01-01:2030-01-01');
+    document.getElementById('cfg_image_format').value = cfg.image_format || 'orig';
+    document.getElementById('cfg_max_concurrent').value = (cfg.download && cfg.download.max_concurrent) || 16;
+    document.getElementById('cfg_has_video').checked = !cfg.mode || cfg.mode.has_video !== false;
+    document.getElementById('cfg_has_text').checked = !cfg.mode || cfg.mode.has_text !== false;
+    document.getElementById('cfg_has_retweet').checked = !!(cfg.mode && cfg.mode.has_retweet);
+    document.getElementById('cfg_has_highlights').checked = !!(cfg.mode && cfg.mode.has_highlights);
+    document.getElementById('cfg_has_likes').checked = !!(cfg.mode && cfg.mode.has_likes);
+    document.getElementById('cfg_enable_cache').value = !cfg.download || cfg.download.enable_cache !== false ? 'true' : 'false';
+    document.getElementById('cfg_async_enabled').value = !cfg.download || cfg.download.async_enabled !== false ? 'true' : 'false';
+    document.getElementById('cfg_download_auto_sync').value = cfg.download && cfg.download.auto_sync ? 'true' : 'false';
     document.getElementById('cfg_max_user_retries').value = (cfg.retry && cfg.retry.max_user_retries) || 3;
     document.getElementById('cfg_retry_delay').value = (cfg.retry && cfg.retry.delay_seconds) || 10;
     document.getElementById('cfg_verbose').value = cfg.logging && cfg.logging.verbose ? 'true' : 'false';
@@ -2539,6 +2503,29 @@ async function pickSavePath() {
     }
 }
 
+async function pruneUnavailableUsers() {
+    await saveDownloadSettings();
+    toast(t('pruneChecking'));
+    try {
+        const previewResp = await fetch('/api/users/prune', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({confirm:false})});
+        const preview = await previewResp.json();
+        const candidates = preview.candidates || [];
+        if (!candidates.length) {
+            toast(t('pruneNoneFound'));
+            return;
+        }
+        const msg = t('pruneConfirm', {count: candidates.length, users: candidates.map(u => '@' + u).join(', ')});
+        if (!confirm(msg)) return;
+        const confirmResp = await fetch('/api/users/prune', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({confirm:true, users:candidates})});
+        const result = await confirmResp.json();
+        downloadUsers = normalizeUsers((downloadUsers || []).filter(u => !(result.removed || []).map(r => r.toLowerCase()).includes(u.toLowerCase())));
+        renderUserListManager();
+        toast(t('pruneRemoved', {count: (result.removed || []).length}));
+    } catch(e) {
+        toast(t('saveFailedToast') + ': ' + e.message, 'error');
+    }
+}
+
 function renderConfigStatus(status) {
     var box = document.getElementById('cfgStatus');
     if (!box) return;
@@ -2567,12 +2554,44 @@ function readLinesFromField(id) {
     }).filter(Boolean);
 }
 
+function setSettingsTimeRangeControls(value) {
+    const parts = (value || '2015-01-01:2030-01-01').split(':');
+    document.getElementById('cfg_time_start').value = parts[0] || '2015-01-01';
+    document.getElementById('cfg_time_end').value = parts[1] || '2030-01-01';
+}
+
+function buildSettingsTimeRange() {
+    let start = document.getElementById('cfg_time_start').value || '2015-01-01';
+    let end = document.getElementById('cfg_time_end').value || '2030-01-01';
+    if (start > end) {
+        const tmp = start;
+        start = end;
+        end = tmp;
+        document.getElementById('cfg_time_start').value = start;
+        document.getElementById('cfg_time_end').value = end;
+    }
+    return start + ':' + end;
+}
+
 async function saveSettings() {
+    var maxConcurrent = Math.max(1, Math.min(32, parseInt(document.getElementById('cfg_max_concurrent').value) || 16));
+    document.getElementById('cfg_max_concurrent').value = maxConcurrent;
     var payload = {
         cookie: document.getElementById('cfg_cookie').value,
         bearer_token: document.getElementById('cfg_bearer_token').value,
         proxy: document.getElementById('cfg_proxy').value.trim(),
         save_path: document.getElementById('cfg_save_path').value.trim(),
+        time_range: buildSettingsTimeRange(),
+        image_format: document.getElementById('cfg_image_format').value,
+        'mode.has_video': document.getElementById('cfg_has_video').checked,
+        'mode.has_text': document.getElementById('cfg_has_text').checked,
+        'mode.has_retweet': document.getElementById('cfg_has_retweet').checked,
+        'mode.has_highlights': document.getElementById('cfg_has_highlights').checked,
+        'mode.has_likes': document.getElementById('cfg_has_likes').checked,
+        'download.max_concurrent': maxConcurrent,
+        'download.enable_cache': document.getElementById('cfg_enable_cache').value === 'true',
+        'download.async_enabled': document.getElementById('cfg_async_enabled').value === 'true',
+        'download.auto_sync': document.getElementById('cfg_download_auto_sync').value === 'true',
         'retry.max_user_retries': parseInt(document.getElementById('cfg_max_user_retries').value) || 3,
         'retry.delay_seconds': parseInt(document.getElementById('cfg_retry_delay').value) || 10,
         'logging.verbose': document.getElementById('cfg_verbose').value === 'true',
