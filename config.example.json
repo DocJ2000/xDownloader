@@ -24,7 +24,8 @@
         "enabled": false,
         "list_id": "",
         "list_owner": "",
-        "list_slug": ""
+        "list_slug": "",
+        "lists": []
     },
     "retry": {
         "max_user_retries": 3,
@@ -49,4 +50,3 @@
     },
     "theme": "dark-glass"
 }
-

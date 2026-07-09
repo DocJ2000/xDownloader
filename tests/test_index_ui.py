@@ -46,40 +46,88 @@ class IndexUiTest(unittest.TestCase):
         self.assertIn("cfg_save_path", self.html)
         self.assertIn("browseFolder", self.html)
 
-    def test_settings_cover_all_user_config_sections(self):
-        expected_controls = [
-            "cfg_download_auto_sync",
+    def test_settings_keeps_only_foundational_configuration(self):
+        for control_id in [
+            "cfg_cookie",
+            "cfg_bearer_token",
+            "cfg_save_path",
+            "cfg_proxy",
             "cfg_verbose",
-            "cfg_tag_search_tag",
-            "cfg_tag_search_filter",
-            "cfg_tag_search_count",
-            "cfg_tag_search_media_latest",
-            "cfg_tag_search_text_mode",
-            "cfg_text_user_list",
-            "cfg_text_max_tweets",
-            "cfg_text_request_delay",
-            "cfg_text_max_retries",
-        ]
-        for control_id in expected_controls:
+            "cfg_log_file",
+            "cfg_theme",
+        ]:
             self.assertIn(control_id, self.html)
+
+        settings_block = self.html.split("async function initSettings()", 1)[1].split("function readLinesFromField", 1)[0]
+        for download_only_control in [
+            "cfg_time_start",
+            "cfg_time_end",
+            "cfg_has_video",
+            "cfg_download_auto_sync",
+            "cfg_tag_search_tag",
+            "cfg_text_user_list",
+            "cfg_list_id",
+        ]:
+            self.assertNotIn(download_only_control, settings_block)
 
     def test_settings_use_apply_language(self):
         self.assertIn("applyConfig", self.html)
         self.assertIn("Applied", self.html)
         self.assertIn("应用", self.html)
 
-    def test_time_range_uses_date_controls(self):
-        self.assertIn('id="cfg_time_start"', self.html)
-        self.assertIn('id="cfg_time_end"', self.html)
+    def test_download_tab_owns_download_options(self):
+        for control_id in [
+            'id="dl_time_start"',
+            'id="dl_time_end"',
+            'id="dl_image_format"',
+            'id="dl_has_video"',
+            'id="dl_has_retweet"',
+            'id="dl_has_highlights"',
+            'id="dl_has_likes"',
+            'id="dl_enable_cache"',
+            'id="dl_async_enabled"',
+            'id="dl_download_auto_sync"',
+            'id="dl_tag_search_tag"',
+            'id="dl_text_user_list"',
+        ]:
+            self.assertIn(control_id, self.html)
         self.assertIn('type="date"', self.html)
-        self.assertIn("buildTimeRange()", self.html)
+        self.assertIn("buildDownloadTimeRange()", self.html)
 
-    def test_list_sync_labels_and_help_are_bilingual(self):
-        for key in ["listId", "listOwner", "listSlug", "listSyncHelp"]:
-            self.assertIn(key, self.html)
-        self.assertIn("cfg_list_id", self.html)
-        self.assertIn("cfg_list_owner", self.html)
-        self.assertIn("cfg_list_slug", self.html)
+    def test_download_control_supports_pause_resume_and_terminate(self):
+        for expected in [
+            "pauseDownload()",
+            "terminateDownload()",
+            "/api/download/pause",
+            "/api/download/terminate",
+            "continueDownload",
+            "terminateDownload",
+        ]:
+            self.assertIn(expected, self.html)
+
+    def test_user_list_manager_supports_reviewing_large_lists(self):
+        for expected in [
+            "dl_user_filter",
+            "dl_user_bulk_add",
+            "dl_user_table",
+            "normalizeUsers",
+            "renderUserListManager",
+            "dedupeUsers",
+            "clearUsers",
+        ]:
+            self.assertIn(expected, self.html)
+
+    def test_multiple_list_sync_controls_exist(self):
+        for expected in [
+            "listSyncItems",
+            "renderListSyncItems",
+            "addListSyncItem",
+            "removeListSyncItem",
+            "syncAllLists",
+            "dl_list_items",
+            "listSyncHelp",
+        ]:
+            self.assertIn(expected, self.html)
 
 
 if __name__ == "__main__":

@@ -29,7 +29,20 @@ def _no_cache(response):
     response.headers['Expires'] = '0'
     return response
 
-download_state = {"running": False, "logs": [], "current": 0, "total": 0, "stats": None}
+download_state = {
+    "running": False,
+    "paused": False,
+    "terminated": False,
+    "state": "idle",
+    "logs": [],
+    "current": 0,
+    "total": 0,
+    "stats": None,
+}
+
+
+def download_progress_path():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'download_progress.json')
 
 
 def get_download_root(config_data=None):
@@ -729,7 +742,8 @@ def ensure_config_file(config_path=CONFIG_PATH, example_path=BUNDLED_CONFIG_EXAM
                 "enabled": False,
                 "list_id": "",
                 "list_owner": "",
-                "list_slug": ""
+                "list_slug": "",
+                "lists": []
             },
             "retry": {
                 "max_user_retries": 3,
@@ -918,6 +932,9 @@ def api_download_start():
 
     download_state = {
         'running': True,
+        'paused': False,
+        'terminated': False,
+        'state': 'running',
         'logs': [],
         'current': 0,
         'total': len(users),
@@ -934,7 +951,7 @@ def _run_download(users):
     queue_log = []
 
     import json as _json
-    progress_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'download_progress.json')
+    progress_file = download_progress_path()
     progress_total = len(users)
 
     completed = set()
@@ -970,6 +987,7 @@ def _run_download(users):
                 time.strftime('[%H:%M:%S] Total: ' + str(progress_total) + ' users complete'),
             ]
             download_state['running'] = False
+            download_state['state'] = 'complete'
             return
     completed_lock = threading.Lock()
 
@@ -1331,25 +1349,38 @@ def _run_download(users):
                     pool.shutdown(wait=False)
                     break
 
-        qlog.info("=" * 40)
-        qlog.info(" DOWNLOAD COMPLETE")
-        qlog.info("=" * 40)
-        qlog.info(f"  Users processed:   {stats['users']}/{progress_total}")
-        qlog.info(f"  Users skipped:     {stats['skipped']}")
-        qlog.info(f"  New images:        {stats['images']}")
-        qlog.info(f"  New videos:        {stats['videos']}")
-        qlog.info(f"  New media total:   {stats['images'] + stats['videos']}")
-        qlog.info(f"  New text tweets:   {stats['text_tweets']}")
-        qlog.info("=" * 40)
+        if download_state.get('terminated'):
+            qlog.info("Download terminated. Progress was reset.")
+        elif download_state.get('paused'):
+            qlog.info("Download paused. Press continue to resume from checkpoint.")
+        else:
+            qlog.info("=" * 40)
+            qlog.info(" DOWNLOAD COMPLETE")
+            qlog.info("=" * 40)
+            qlog.info(f"  Users processed:   {stats['users']}/{progress_total}")
+            qlog.info(f"  Users skipped:     {stats['skipped']}")
+            qlog.info(f"  New images:        {stats['images']}")
+            qlog.info(f"  New videos:        {stats['videos']}")
+            qlog.info(f"  New media total:   {stats['images'] + stats['videos']}")
+            qlog.info(f"  New text tweets:   {stats['text_tweets']}")
+            qlog.info("=" * 40)
         download_state['stats'] = dict(stats)
 
-        if stats['users'] >= progress_total and os.path.exists(progress_file):
+        if download_state.get('terminated') and os.path.exists(progress_file):
+            os.remove(progress_file)
+        elif stats['users'] >= progress_total and os.path.exists(progress_file):
             os.remove(progress_file)
 
     except Exception as e:
         qlog.error(f"Download crashed: {e}")
     finally:
         download_state['running'] = False
+        if download_state.get('terminated'):
+            download_state['state'] = 'terminated'
+        elif download_state.get('paused'):
+            download_state['state'] = 'paused'
+        else:
+            download_state['state'] = 'complete'
         qlog.info("Download finished")
 
 
@@ -1483,9 +1514,36 @@ def api_download_sync_status():
 
 @app.route('/api/download/stop', methods=['POST'])
 def api_download_stop():
+    return api_download_pause()
+
+
+@app.route('/api/download/pause', methods=['POST'])
+def api_download_pause():
     global download_state
     download_state['running'] = False
-    return jsonify({'ok': True})
+    download_state['paused'] = True
+    download_state['terminated'] = False
+    download_state['state'] = 'paused'
+    logs = download_state.setdefault('logs', [])
+    logs.append(time.strftime('[%H:%M:%S] Pause requested. Progress checkpoint is kept.'))
+    download_state['logs'] = logs[-200:]
+    return jsonify({'ok': True, 'state': 'paused'})
+
+
+@app.route('/api/download/terminate', methods=['POST'])
+def api_download_terminate():
+    global download_state
+    download_state['running'] = False
+    download_state['paused'] = False
+    download_state['terminated'] = True
+    download_state['state'] = 'terminated'
+    progress_file = download_progress_path()
+    if os.path.exists(progress_file):
+        os.remove(progress_file)
+    logs = download_state.setdefault('logs', [])
+    logs.append(time.strftime('[%H:%M:%S] Terminate requested. Progress checkpoint was cleared.'))
+    download_state['logs'] = logs[-200:]
+    return jsonify({'ok': True, 'state': 'terminated'})
 
 
 @app.route('/media/<path:filepath>')

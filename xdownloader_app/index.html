@@ -726,7 +726,47 @@ const APP_TEXT = {
         syncCompleteAdded: '同步完成，新增 {count} 个用户',
         syncCompleteNoNew: '同步完成，共 {count} 名成员，无新增',
         syncCompleteNoNewToast: '同步完成，无新增用户',
-        syncComplete: '同步完成'
+        syncComplete: '同步完成',
+        options: '下载选项',
+        timeRange: '时间范围',
+        imageFormat: '图片格式',
+        downloadVideos: '下载视频',
+        downloadRetweets: '下载转推',
+        highlights: '高亮推文',
+        likes: '喜欢内容',
+        cache: '缓存',
+        asyncDownload: '异步下载',
+        enabled: '启用',
+        disabled: '禁用',
+        downloadAutoSync: '下载时自动同步',
+        tagSearch: '标签搜索',
+        tag: '关键词',
+        filter: '过滤条件',
+        downloadCount: '下载数量',
+        mediaLatest: '优先最新媒体',
+        textMode: '文本模式',
+        textDownload: '文本下载',
+        textUsers: '文本用户',
+        maxTweets: '最大推文数',
+        requestDelay: '请求间隔',
+        maxRetries: '最大重试',
+        listSlug: '列表短名',
+        listSyncHelp: '优先使用列表 ID。可添加多个列表，并一键同步所有启用列表。',
+        bulkAddUsers: '批量添加用户',
+        filterUsers: '筛选用户名',
+        filterUsersPlaceholder: '输入关键词过滤名单',
+        addUsers: '添加到名单',
+        dedupeUsers: '去重整理',
+        clearUsers: '清空名单',
+        userManagerHelp: '支持批量粘贴，每行一个用户名。系统会自动去重并去掉 @。',
+        addList: '添加列表',
+        remove: '删除',
+        syncAllLists: '同步全部列表',
+        pauseDownload: '暂停下载',
+        continueDownload: '继续下载',
+        terminateDownload: '终止下载',
+        downloadPaused: '下载已暂停',
+        downloadTerminated: '下载已终止'
     },
     en: {
         htmlLang: 'en',
@@ -859,7 +899,47 @@ const APP_TEXT = {
         syncCompleteAdded: 'Sync complete, added {count} users',
         syncCompleteNoNew: 'Sync complete, {count} members, no new users',
         syncCompleteNoNewToast: 'Sync complete, no new users',
-        syncComplete: 'Sync complete'
+        syncComplete: 'Sync complete',
+        options: 'Download options',
+        timeRange: 'Time range',
+        imageFormat: 'Image format',
+        downloadVideos: 'Download videos',
+        downloadRetweets: 'Download retweets',
+        highlights: 'Highlights',
+        likes: 'Likes',
+        cache: 'Cache',
+        asyncDownload: 'Async download',
+        enabled: 'Enabled',
+        disabled: 'Disabled',
+        downloadAutoSync: 'Auto sync while downloading',
+        tagSearch: 'Tag search',
+        tag: 'Keyword',
+        filter: 'Filter',
+        downloadCount: 'Download count',
+        mediaLatest: 'Media latest',
+        textMode: 'Text mode',
+        textDownload: 'Text download',
+        textUsers: 'Text users',
+        maxTweets: 'Max tweets',
+        requestDelay: 'Request delay',
+        maxRetries: 'Max retries',
+        listSlug: 'List slug',
+        listSyncHelp: 'List ID is preferred. Add multiple lists and sync all enabled lists at once.',
+        bulkAddUsers: 'Bulk add users',
+        filterUsers: 'Filter users',
+        filterUsersPlaceholder: 'Type to filter the list',
+        addUsers: 'Add users',
+        dedupeUsers: 'Deduplicate',
+        clearUsers: 'Clear users',
+        userManagerHelp: 'Paste many usernames at once, one per line. The app removes @ and duplicates automatically.',
+        addList: 'Add list',
+        remove: 'Remove',
+        syncAllLists: 'Sync all lists',
+        pauseDownload: 'Pause download',
+        continueDownload: 'Continue download',
+        terminateDownload: 'Terminate download',
+        downloadPaused: 'Download paused',
+        downloadTerminated: 'Download terminated'
     }
 };
 
@@ -1804,25 +1884,44 @@ function renderMediaTile(item) {
 
 /* ===== Download Tab ===== */
 let downloadPolling = null;
+let syncPolling = null;
+let syncLogCount = 0;
+let downloadUsers = [];
+let listSyncItems = [];
 
 function initDownloadTab() {
     const container = document.getElementById('tab-download');
     container.innerHTML = `<div class="download-layout">
         <div class="form-section"><h3>${t('userListTitle')} <span id="dlUserCount" style="font-weight:400;font-size:13px;color:var(--text-dim)"></span></h3>
-            <div class="form-group"><label>${t('oneUserPerLine')}</label><textarea id="dl_user_list" placeholder="openai&#10;github&#10;..."></textarea></div>
+            <div class="form-row"><div class="form-group"><label>${t('bulkAddUsers')}</label><textarea id="dl_user_bulk_add" placeholder="openai&#10;github&#10;elonmusk"></textarea></div>
+            <div class="form-group"><label>${t('filterUsers')}</label><input id="dl_user_filter" placeholder="${t('filterUsersPlaceholder')}" oninput="renderUserListManager()">
+                <div class="download-actions" style="margin-top:8px"><button class="btn btn-secondary" onclick="applyBulkUsers()">${t('addUsers')}</button><button class="btn btn-secondary" onclick="dedupeUsers()">${t('dedupeUsers')}</button><button class="btn btn-danger" onclick="clearUsers()">${t('clearUsers')}</button></div>
+                <div class="field-help">${t('userManagerHelp')}</div></div></div>
+            <div id="dl_user_table" class="compact-list" style="max-height:260px;overflow:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px"></div>
+        </div>
+        <div class="form-section"><h3>${t('options')}</h3>
+            <div class="form-row"><div class="form-group"><label>${t('timeRange')}</label><input id="dl_time_start" type="date"></div><div class="form-group"><label>&nbsp;</label><input id="dl_time_end" type="date"></div></div>
+            <div class="form-row"><div class="form-group"><label>${t('imageFormat')}</label><select id="dl_image_format"><option value="orig">orig</option><option value="jpg">jpg</option><option value="png">png</option></select></div><div class="form-group"><label>${t('concurrencyShort')}</label><input id="dlConcurrency" type="number" min="1" max="32" value="16"></div></div>
+            <div class="download-options"><label><input type="checkbox" id="dl_has_video"> ${t('downloadVideos')}</label><label><input type="checkbox" id="dl_has_retweet"> ${t('downloadRetweets')}</label><label><input type="checkbox" id="dl_has_highlights"> ${t('highlights')}</label><label><input type="checkbox" id="dl_has_likes"> ${t('likes')}</label></div>
+            <div class="form-row"><div class="form-group"><label>${t('cache')}</label><select id="dl_enable_cache"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select></div><div class="form-group"><label>${t('asyncDownload')}</label><select id="dl_async_enabled"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select></div><div class="form-group"><label>${t('downloadAutoSync')}</label><select id="dl_download_auto_sync"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select></div></div>
+        </div>
+        <div class="form-section"><h3>${t('tagSearch')}</h3>
+            <div class="form-row"><div class="form-group"><label>${t('tag')}</label><input id="dl_tag_search_tag"></div><div class="form-group"><label>${t('filter')}</label><input id="dl_tag_search_filter"></div></div>
+            <div class="form-row"><div class="form-group"><label>${t('downloadCount')}</label><input id="dl_tag_search_count" type="number" min="1" value="100"></div><div class="form-group"><label>${t('mediaLatest')}</label><select id="dl_tag_search_media_latest"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select></div><div class="form-group"><label>${t('textMode')}</label><select id="dl_tag_search_text_mode"><option value="true">${t('enabled')}</option><option value="false">${t('disabled')}</option></select></div></div>
+        </div>
+        <div class="form-section"><h3>${t('textDownload')}</h3>
+            <div class="form-row"><div class="form-group"><label>${t('textUsers')}</label><textarea id="dl_text_user_list" placeholder="openai&#10;github"></textarea></div><div class="form-group"><label>${t('maxTweets')}</label><input id="dl_text_max_tweets" type="number" min="0" value="500"><label>${t('requestDelay')}</label><input id="dl_text_request_delay" type="number" min="0" step="0.1" value="2"><label>${t('maxRetries')}</label><input id="dl_text_max_retries" type="number" min="0" value="3"></div></div>
         </div>
         <div class="form-section"><h3>${t('syncSettings')}</h3>
-            <div class="form-row"><div class="form-group"><label>${t('listId')}</label><input id="dl_list_id" placeholder="1234567890"></div>
-            <div class="form-group"><label>${t('listOwner')}</label><input id="dl_list_owner" placeholder="your_username"></div></div>
-            <div class="form-group"><label>${t('listName')}</label><input id="dl_list_slug" placeholder="favorites"></div>
+            <div class="field-help">${t('listSyncHelp')}</div>
+            <div id="dl_list_items"></div>
+            <div class="download-actions"><button class="btn btn-secondary" onclick="addListSyncItem()">${t('addList')}</button><button class="btn btn-primary" onclick="syncAllLists()" id="btnSyncAll">${t('syncAllLists')}</button></div>
         </div>
         <div class="download-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="startSync()" id="btnSync">${t('syncList')}</button>
-            <button class="btn btn-primary" onclick="startDownload()">${t('startDownload')}</button>
-            <button class="btn btn-danger" onclick="stopDownload()" id="btnStopDl" style="display:none">${t('stop')}</button>
+            <button class="btn btn-primary" onclick="startDownload()" id="btnStartDl">${t('startDownload')}</button>
+            <button class="btn btn-secondary" onclick="pauseDownload()" id="btnPauseDl" style="display:none">${t('pauseDownload')}</button>
+            <button class="btn btn-danger" onclick="terminateDownload()" id="btnTerminateDl">${t('terminateDownload')}</button>
             <button class="btn btn-secondary" onclick="saveDownloadSettings()">${t('saveSettings')}</button>
-            <label style="font-size:12px;color:var(--text-dim);margin-left:8px">${t('concurrencyShort')}</label>
-            <input id="dlConcurrency" type="number" min="1" max="32" value="16" style="width:44px;font-size:12px;padding:3px 4px;background:var(--panel-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);text-align:center">
             <div id="dlLiveStats" style="display:none;font-size:12px;color:var(--text-dim);background:var(--panel-bg);border:1px solid var(--border);border-radius:6px;padding:4px 10px;white-space:nowrap"></div>
         </div>
         <div id="downloadQueuePanel" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 12px">
@@ -1839,30 +1938,177 @@ function initDownloadTab() {
     </div>`;
 
     fetch('/api/config').then(r=>r.json()).then(cfg => {
-        const ta = document.getElementById('dl_user_list');
-        ta.value = (cfg.user_list||[]).join('\n');
-        updateUserCount();
-        ta.addEventListener('input', updateUserCount);
-        document.getElementById('dl_list_id').value = cfg.list_sync?.list_id||'';
-        document.getElementById('dl_list_owner').value = cfg.list_sync?.list_owner||'';
-        document.getElementById('dl_list_slug').value = cfg.list_sync?.list_slug||'';
+        downloadUsers = normalizeUsers(cfg.user_list || []);
+        renderUserListManager();
+        listSyncItems = normalizeListSyncItems(cfg.list_sync);
+        renderListSyncItems();
         const mc = cfg.download?.max_concurrent || 16;
         document.getElementById('dlConcurrency').value = mc;
+        setDownloadTimeRangeControls(cfg.time_range || '2015-01-01:2030-01-01');
+        document.getElementById('dl_image_format').value = cfg.image_format || 'orig';
+        document.getElementById('dl_has_video').checked = !cfg.mode || cfg.mode.has_video !== false;
+        document.getElementById('dl_has_retweet').checked = !!(cfg.mode && cfg.mode.has_retweet);
+        document.getElementById('dl_has_highlights').checked = !!(cfg.mode && cfg.mode.has_highlights);
+        document.getElementById('dl_has_likes').checked = !!(cfg.mode && cfg.mode.has_likes);
+        document.getElementById('dl_enable_cache').value = !cfg.download || cfg.download.enable_cache !== false ? 'true' : 'false';
+        document.getElementById('dl_async_enabled').value = !cfg.download || cfg.download.async_enabled !== false ? 'true' : 'false';
+        document.getElementById('dl_download_auto_sync').value = cfg.download && cfg.download.auto_sync ? 'true' : 'false';
+        document.getElementById('dl_tag_search_tag').value = (cfg.tag_search && cfg.tag_search.tag) || '';
+        document.getElementById('dl_tag_search_filter').value = (cfg.tag_search && cfg.tag_search.filter) || '';
+        document.getElementById('dl_tag_search_count').value = (cfg.tag_search && cfg.tag_search.download_count) || 100;
+        document.getElementById('dl_tag_search_media_latest').value = cfg.tag_search && cfg.tag_search.media_latest ? 'true' : 'false';
+        document.getElementById('dl_tag_search_text_mode').value = cfg.tag_search && cfg.tag_search.text_mode ? 'true' : 'false';
+        document.getElementById('dl_text_user_list').value = ((cfg.text_download && cfg.text_download.user_list) || []).join('\n');
+        document.getElementById('dl_text_max_tweets').value = (cfg.text_download && cfg.text_download.max_tweets) || 500;
+        document.getElementById('dl_text_request_delay').value = (cfg.text_download && cfg.text_download.request_delay) || 2;
+        document.getElementById('dl_text_max_retries').value = (cfg.text_download && cfg.text_download.max_retries) || 3;
     });
+}
+
+function normalizeUsers(input) {
+    const seen = new Set();
+    const raw = Array.isArray(input) ? input : String(input || '').split(/\n|,|;/);
+    const users = [];
+    raw.forEach(item => {
+        const user = String(item || '').trim().replace(/^@/, '');
+        if (user && !seen.has(user.toLowerCase())) {
+            seen.add(user.toLowerCase());
+            users.push(user);
+        }
+    });
+    return users;
+}
+
+function renderUserListManager() {
+    const filter = (document.getElementById('dl_user_filter')?.value || '').trim().toLowerCase();
+    const el = document.getElementById('dl_user_table');
+    if (!el) return;
+    const visible = downloadUsers.filter(u => !filter || u.toLowerCase().includes(filter));
+    el.innerHTML = visible.length ? visible.map(u => '<div class="compact-row"><div><div class="compact-title">@' + esc(u) + '</div></div><button class="btn btn-secondary" onclick="removeUserFromList(\'' + esc(u) + '\')">×</button></div>').join('') : '<div class="empty-state">' + t('noMatchingUsers') + '</div>';
+    updateUserCount();
+}
+
+function updateUserCount() {
+    const el = document.getElementById('dlUserCount');
+    if (el) el.textContent = '(' + downloadUsers.length + ' ' + t('userCount') + ')';
+}
+
+function applyBulkUsers() {
+    const ta = document.getElementById('dl_user_bulk_add');
+    downloadUsers = normalizeUsers(downloadUsers.concat(normalizeUsers(ta.value)));
+    ta.value = '';
+    renderUserListManager();
+}
+
+function dedupeUsers() {
+    downloadUsers = normalizeUsers(downloadUsers);
+    renderUserListManager();
+}
+
+function clearUsers() {
+    downloadUsers = [];
+    renderUserListManager();
+}
+
+function removeUserFromList(user) {
+    downloadUsers = downloadUsers.filter(u => u !== user);
+    renderUserListManager();
+}
+
+function normalizeListSyncItems(listSync) {
+    const items = Array.isArray(listSync?.lists) ? listSync.lists.slice() : [];
+    if (!items.length && (listSync?.list_id || listSync?.list_owner || listSync?.list_slug)) {
+        items.push({name: '', list_id: listSync.list_id || '', list_owner: listSync.list_owner || '', list_slug: listSync.list_slug || '', enabled: listSync.enabled !== false});
+    }
+    return items.length ? items.map(item => ({name: item.name || '', list_id: item.list_id || '', list_owner: item.list_owner || '', list_slug: item.list_slug || '', enabled: item.enabled !== false})) : [{name: '', list_id: '', list_owner: '', list_slug: '', enabled: true}];
+}
+
+function renderListSyncItems() {
+    const box = document.getElementById('dl_list_items');
+    if (!box) return;
+    box.innerHTML = listSyncItems.map((item, idx) => `
+        <div class="form-section" style="border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:10px">
+            <div class="form-row"><div class="form-group"><label>${t('listName')}</label><input data-list-field="name" data-list-index="${idx}" value="${esc(item.name)}" placeholder="AI list"></div><div class="form-group"><label>${t('listId')}</label><input data-list-field="list_id" data-list-index="${idx}" value="${esc(item.list_id)}" placeholder="1234567890"></div></div>
+            <div class="form-row"><div class="form-group"><label>${t('listOwner')}</label><input data-list-field="list_owner" data-list-index="${idx}" value="${esc(item.list_owner)}" placeholder="owner"></div><div class="form-group"><label>${t('listSlug')}</label><input data-list-field="list_slug" data-list-index="${idx}" value="${esc(item.list_slug)}" placeholder="favorites"></div></div>
+            <div class="download-actions"><label><input type="checkbox" data-list-field="enabled" data-list-index="${idx}" ${item.enabled ? 'checked' : ''}> ${t('enabled')}</label><button class="btn btn-primary" onclick="startSync(${idx})">${t('syncList')}</button><button class="btn btn-secondary" onclick="removeListSyncItem(${idx})">${t('remove')}</button></div>
+        </div>`).join('');
+}
+
+function collectListSyncItems() {
+    const next = listSyncItems.map(item => ({...item}));
+    document.querySelectorAll('[data-list-field]').forEach(el => {
+        const idx = parseInt(el.dataset.listIndex);
+        const field = el.dataset.listField;
+        next[idx][field] = field === 'enabled' ? el.checked : el.value.trim();
+    });
+    listSyncItems = next.filter(item => item.list_id || item.list_owner || item.list_slug || item.name);
+    if (!listSyncItems.length) listSyncItems = [{name: '', list_id: '', list_owner: '', list_slug: '', enabled: true}];
+    return listSyncItems;
+}
+
+function addListSyncItem() {
+    collectListSyncItems();
+    listSyncItems.push({name: '', list_id: '', list_owner: '', list_slug: '', enabled: true});
+    renderListSyncItems();
+}
+
+function removeListSyncItem(index) {
+    collectListSyncItems();
+    listSyncItems.splice(index, 1);
+    if (!listSyncItems.length) listSyncItems.push({name: '', list_id: '', list_owner: '', list_slug: '', enabled: true});
+    renderListSyncItems();
+}
+
+function setDownloadTimeRangeControls(value) {
+    const parts = (value || '2015-01-01:2030-01-01').split(':');
+    document.getElementById('dl_time_start').value = parts[0] || '2015-01-01';
+    document.getElementById('dl_time_end').value = parts[1] || '2030-01-01';
+}
+
+function buildDownloadTimeRange() {
+    let start = document.getElementById('dl_time_start').value || '2015-01-01';
+    let end = document.getElementById('dl_time_end').value || '2030-01-01';
+    if (start > end) {
+        const tmp = start;
+        start = end;
+        end = tmp;
+        document.getElementById('dl_time_start').value = start;
+        document.getElementById('dl_time_end').value = end;
+    }
+    return start + ':' + end;
 }
 
 async function saveDownloadSettings() {
     const v = parseInt(document.getElementById('dlConcurrency').value) || 16;
     const val = Math.max(1, Math.min(32, v));
     document.getElementById('dlConcurrency').value = val;
-    const raw = document.getElementById('dl_user_list').value;
-    const users = raw.split('\n').map(s=>s.trim()).filter(Boolean);
+    const lists = collectListSyncItems();
     const payload = {
-        user_list: users,
+        user_list: downloadUsers,
+        time_range: buildDownloadTimeRange(),
+        image_format: document.getElementById('dl_image_format').value,
+        'mode.has_video': document.getElementById('dl_has_video').checked,
+        'mode.has_retweet': document.getElementById('dl_has_retweet').checked,
+        'mode.has_highlights': document.getElementById('dl_has_highlights').checked,
+        'mode.has_likes': document.getElementById('dl_has_likes').checked,
         'download.max_concurrent': val,
-        'list_sync.list_id': document.getElementById('dl_list_id').value.trim(),
-        'list_sync.list_owner': document.getElementById('dl_list_owner').value.trim(),
-        'list_sync.list_slug': document.getElementById('dl_list_slug').value.trim(),
+        'download.enable_cache': document.getElementById('dl_enable_cache').value === 'true',
+        'download.async_enabled': document.getElementById('dl_async_enabled').value === 'true',
+        'download.auto_sync': document.getElementById('dl_download_auto_sync').value === 'true',
+        'tag_search.tag': document.getElementById('dl_tag_search_tag').value.trim(),
+        'tag_search.filter': document.getElementById('dl_tag_search_filter').value.trim(),
+        'tag_search.download_count': Math.max(1, parseInt(document.getElementById('dl_tag_search_count').value) || 100),
+        'tag_search.media_latest': document.getElementById('dl_tag_search_media_latest').value === 'true',
+        'tag_search.text_mode': document.getElementById('dl_tag_search_text_mode').value === 'true',
+        'text_download.user_list': readLinesFromElement('dl_text_user_list'),
+        'text_download.max_tweets': Math.max(0, parseInt(document.getElementById('dl_text_max_tweets').value) || 0),
+        'text_download.request_delay': Math.max(0, parseFloat(document.getElementById('dl_text_request_delay').value) || 0),
+        'text_download.max_retries': Math.max(0, parseInt(document.getElementById('dl_text_max_retries').value) || 0),
+        'list_sync.enabled': lists.some(item => item.enabled !== false),
+        'list_sync.lists': lists,
+        'list_sync.list_id': lists[0]?.list_id || '',
+        'list_sync.list_owner': lists[0]?.list_owner || '',
+        'list_sync.list_slug': lists[0]?.list_slug || '',
     };
     try {
         const r = await fetch('/api/config', {
@@ -1881,24 +2127,14 @@ async function saveDownloadSettings() {
     }
 }
 
-function updateUserCount() {
-    const ta = document.getElementById('dl_user_list');
-    if (!ta) return;
-    const count = ta.value.split('\n').map(s=>s.trim()).filter(Boolean).length;
-    const el = document.getElementById('dlUserCount');
-    if (el) el.textContent = '(' + count + ' ' + t('userCount') + ')';
+function readLinesFromElement(id) {
+    return (document.getElementById(id)?.value || '').split('\n').map(s => s.trim().replace(/^@/, '')).filter(Boolean);
 }
 
 async function startDownload() {
-    const raw = document.getElementById('dl_user_list').value;
-    const users = raw.split('\n').map(s=>s.trim()).filter(Boolean);
+    const users = normalizeUsers(downloadUsers);
     if (!users.length) { toast(t('fillUserList'), 'error'); return; }
-    const syncPayload = {
-        'list_sync.list_id': document.getElementById('dl_list_id').value.trim(),
-        'list_sync.list_owner': document.getElementById('dl_list_owner').value.trim(),
-        'list_sync.list_slug': document.getElementById('dl_list_slug').value.trim(),
-    };
-    fetch('/api/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({user_list: users, ...syncPayload})});
+    await saveDownloadSettings();
     const r = await fetch('/api/download/start', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -1906,7 +2142,8 @@ async function startDownload() {
     });
     const d = await r.json();
     if (d.error) { toast(d.error, 'error'); return; }
-    document.getElementById('btnStopDl').style.display = '';
+    document.getElementById('btnPauseDl').style.display = '';
+    document.getElementById('btnStartDl').textContent = t('startDownload');
     document.getElementById('dlLog').textContent = '';
     document.getElementById('dlSyncResult').textContent = '';
     document.getElementById('dlStatsResult').innerHTML = '';
@@ -1917,21 +2154,12 @@ async function startDownload() {
     toast(t('downloadStarted'));
 }
 
-let syncPolling = null;
-let syncLogCount = 0;
-
-async function startSync() {
-    const btn = document.getElementById('btnSync');
-    const listId = document.getElementById('dl_list_id').value.trim();
+async function startSync(index) {
+    const lists = collectListSyncItems();
+    const item = lists[index] || {};
+    const listId = (item.list_id || '').trim();
     if (!listId) { toast(t('fillListId'), 'error'); return; }
-    btn.disabled = true;
-    btn.textContent = t('syncing');
-    const syncPayload = {
-        'list_sync.list_id': listId,
-        'list_sync.list_owner': document.getElementById('dl_list_owner').value.trim(),
-        'list_sync.list_slug': document.getElementById('dl_list_slug').value.trim(),
-    };
-    fetch('/api/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(syncPayload)});
+    await saveDownloadSettings();
     try {
         const r = await fetch('/api/download/sync', {
             method: 'POST',
@@ -1939,11 +2167,9 @@ async function startSync() {
             body: JSON.stringify({list_id: listId})
         });
         const d = await r.json();
-        if (d.error) { toast(d.error, 'error'); btn.disabled = false; btn.textContent = t('syncList'); return; }
+        if (d.error) { toast(d.error, 'error'); return; }
     } catch(e) {
         toast(t('syncRequestFailed') + e.message, 'error');
-        btn.disabled = false;
-        btn.textContent = t('syncList');
         return;
     }
     document.getElementById('dlLog').textContent += '\n' + t('listSyncHeader') + '\n';
@@ -1956,9 +2182,57 @@ async function startSync() {
     toast(t('syncStarted'));
 }
 
+async function syncAllLists() {
+    const lists = collectListSyncItems().filter(item => item.enabled !== false && item.list_id);
+    if (!lists.length) { toast(t('fillListId'), 'error'); return; }
+    const btn = document.getElementById('btnSyncAll');
+    if (btn) btn.disabled = true;
+    for (const item of lists) {
+        await saveDownloadSettings();
+        document.getElementById('dlLog').textContent += '\n' + t('listSyncHeader') + ' ' + (item.name || item.list_id) + '\n';
+        try {
+            const r = await fetch('/api/download/sync', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({list_id: item.list_id})
+            });
+            const d = await r.json();
+            if (d.error) {
+                toast(d.error, 'error');
+                continue;
+            }
+            await waitForSyncCompletion();
+        } catch(e) {
+            toast(t('syncRequestFailed') + e.message, 'error');
+        }
+    }
+    if (btn) btn.disabled = false;
+    fetch('/api/config').then(r=>r.json()).then(cfg => {
+        downloadUsers = normalizeUsers(cfg.user_list || []);
+        renderUserListManager();
+    });
+    toast(t('syncComplete'));
+}
+
+function waitForSyncCompletion() {
+    return new Promise(resolve => {
+        const tick = () => {
+            safeFetch('/api/download/sync_status').then(r=>r.json()).then(s => {
+                const log = document.getElementById('dlLog');
+                if (log) {
+                    log.textContent = (s.logs || []).join('\n');
+                    log.scrollTop = log.scrollHeight;
+                }
+                if (!s.running) resolve();
+                else setTimeout(tick, 1000);
+            }).catch(() => resolve());
+        };
+        tick();
+    });
+}
+
 function pollSyncStatus() {
     safeFetch('/api/download/sync_status').then(r=>r.json()).then(s => {
-        const btn = document.getElementById('btnSync');
         const log = document.getElementById('dlLog');
         const allLogs = s.logs||[];
         if (allLogs.length > syncLogCount) {
@@ -1970,15 +2244,14 @@ function pollSyncStatus() {
             clearInterval(syncPolling);
             syncPolling = null;
             syncLogCount = 0;
-            if (btn) { btn.disabled = false; btn.textContent = t('syncList'); }
             const result = document.getElementById('dlSyncResult');
             const nu = s.new_users||[];
             if (nu.length) {
                 result.innerHTML = '<span style="color:#4ade80">✔ ' + t('syncCompleteAdded', {count: nu.length}) + '</span><br><span style="font-size:12px">' + nu.map(u=>'@'+esc(u)).join(', ') + '</span>';
                 toast(t('syncCompleteAdded', {count: nu.length}));
                 fetch('/api/config').then(r=>r.json()).then(cfg => {
-                    const ta = document.getElementById('dl_user_list');
-                    if (ta) { ta.value = (cfg.user_list||[]).join('\n'); updateUserCount(); }
+                    downloadUsers = normalizeUsers(cfg.user_list || []);
+                    renderUserListManager();
                 });
             } else if (s.total_members) {
                 result.innerHTML = '<span style="color:var(--text-dim)">✔ ' + t('syncCompleteNoNew', {count: s.total_members}) + '</span>';
@@ -1991,8 +2264,19 @@ function pollSyncStatus() {
     });
 }
 
-function stopDownload() {
-    fetch('/api/download/stop', {method:'POST'});
+async function pauseDownload() {
+    await fetch('/api/download/pause', {method:'POST'});
+    document.getElementById('btnStartDl').textContent = t('continueDownload');
+    document.getElementById('btnPauseDl').style.display = 'none';
+    toast(t('downloadPaused'));
+}
+
+async function terminateDownload() {
+    await fetch('/api/download/terminate', {method:'POST'});
+    document.getElementById('btnStartDl').textContent = t('startDownload');
+    document.getElementById('btnPauseDl').style.display = 'none';
+    document.getElementById('dlProgress').style.width = '0%';
+    toast(t('downloadTerminated'));
 }
 
 function pollDownloadStatus() {
@@ -2012,7 +2296,8 @@ function pollDownloadStatus() {
         if (!s.running) {
             clearInterval(downloadPolling);
             downloadPolling = null;
-            document.getElementById('btnStopDl').style.display = 'none';
+            document.getElementById('btnPauseDl').style.display = 'none';
+            document.getElementById('btnStartDl').textContent = s.paused || s.state === 'paused' ? t('continueDownload') : t('startDownload');
             const statsEl = document.getElementById('dlStatsResult');
             if (s.stats) {
                 liveStats.style.display = 'none';
@@ -2020,7 +2305,9 @@ function pollDownloadStatus() {
                 const media_total = (st.images||0) + (st.videos||0);
                 statsEl.innerHTML = renderDownloadStats(st, media_total);
             }
-            toast(t('downloadComplete'));
+            if (s.paused || s.state === 'paused') toast(t('downloadPaused'));
+            else if (s.terminated || s.state === 'terminated') toast(t('downloadTerminated'));
+            else toast(t('downloadComplete'));
         }
     });
 }
@@ -2044,7 +2331,7 @@ function zh(s) {
         browseFolder: '&#x6d4f;&#x89c8;', chooseFolderFailed: '&#x6253;&#x5f00;&#x6587;&#x4ef6;&#x5939;&#x9009;&#x62e9;&#x5668;&#x5931;&#x8d25;',
         tagSearch: '&#x6807;&#x7b7e;&#x641c;&#x7d22;', tag: '&#x5173;&#x952e;&#x8bcd;', filter: '&#x8fc7;&#x6ee4;&#x6761;&#x4ef6;', downloadCount: '&#x4e0b;&#x8f7d;&#x6570;&#x91cf;', mediaLatest: '&#x4f18;&#x5148;&#x6700;&#x65b0;&#x5a92;&#x4f53;', textMode: '&#x6587;&#x672c;&#x6a21;&#x5f0f;',
         textDownload: '&#x6587;&#x672c;&#x4e0b;&#x8f7d;', textUsers: '&#x6587;&#x672c;&#x7528;&#x6237;', maxTweets: '&#x6700;&#x5927;&#x63a8;&#x6587;&#x6570;', requestDelay: '&#x8bf7;&#x6c42;&#x95f4;&#x9694;', maxRetries: '&#x6700;&#x5927;&#x91cd;&#x8bd5;', verboseLog: '&#x8be6;&#x7ec6;&#x65e5;&#x5fd7;', downloadAutoSync: '&#x4e0b;&#x8f7d;&#x65f6;&#x81ea;&#x52a8;&#x540c;&#x6b65;',
-        setupTitle: '&#x914d;&#x7f6e;&#x4e2d;&#x5fc3;', setupCopy: '&#x628a;&#x6bcf;&#x4e2a;&#x4eba;&#x90fd;&#x9700;&#x8981;&#x6539;&#x7684;&#x9879;&#x76ee;&#x96c6;&#x4e2d;&#x5728;&#x8fd9;&#x91cc;&#xff1a;&#x8d26;&#x53f7;&#x51ed;&#x8bc1;&#x3001;&#x4fdd;&#x5b58;&#x8def;&#x5f84;&#x3001;&#x4ee3;&#x7406;&#x548c;&#x4e0b;&#x8f7d;&#x540d;&#x5355;&#x3002;',
+        setupTitle: '&#x914d;&#x7f6e;&#x4e2d;&#x5fc3;', setupCopy: '&#x8fd9;&#x91cc;&#x53ea;&#x653e;&#x57fa;&#x7840;&#x914d;&#x7f6e;&#xff1a;&#x8d26;&#x53f7;&#x51ed;&#x8bc1;&#x3001;&#x4fdd;&#x5b58;&#x8def;&#x5f84;&#x3001;&#x4ee3;&#x7406;&#x3001;&#x65e5;&#x5fd7;&#x548c;&#x4e3b;&#x9898;&#x3002;&#x4e0b;&#x8f7d;&#x9009;&#x9879;&#x5df2;&#x79fb;&#x5230;&#x4e0b;&#x8f7d;&#x9875;&#x3002;',
         stepAccount: '&#x586b;&#x8d26;&#x53f7;', stepPath: '&#x9009;&#x8def;&#x5f84;', stepDownload: '&#x5f00;&#x59cb;&#x4e0b;&#x8f7d;',
         checkNow: '&#x7acb;&#x5373;&#x68c0;&#x6d4b;', configPassed: '&#x914d;&#x7f6e;&#x68c0;&#x67e5;&#x901a;&#x8fc7;', configMissing: '&#x914d;&#x7f6e;&#x8fd8;&#x7f3a;&#x9879;&#x76ee;',
         cookieHelp: '&#x4ece;&#x6d4f;&#x89c8;&#x5668;&#x767b;&#x5f55; X &#x540e;&#x590d;&#x5236;&#x5b8c;&#x6574; Cookie&#x3002;&#x672a;&#x70b9;&#x51fb;&#x66ff;&#x6362;&#x65f6;&#xff0c;&#x9690;&#x85cf;&#x503c;&#x4e0d;&#x4f1a;&#x8986;&#x76d6;&#x539f;&#x914d;&#x7f6e;&#x3002;',
@@ -2115,7 +2402,7 @@ function zh(s) {
             verboseLog: 'Verbose log',
             downloadAutoSync: 'Auto sync while downloading',
             setupTitle: 'Configuration',
-            setupCopy: 'Personal settings live here: account credentials, save path, proxy, and the download user list.',
+            setupCopy: 'Only foundational settings live here: account credentials, save path, proxy, logging, and theme. Download options now live on the Download tab.',
             stepAccount: 'Account',
             stepPath: 'Path',
             stepDownload: 'Download',
@@ -2159,8 +2446,6 @@ async function initSettings() {
     var status = await statusResp.json();
     var container = document.getElementById('tab-settings');
     var theme = cfg.theme || document.documentElement.dataset.theme || 'dark-glass';
-    var users = (cfg.user_list || []).join('\n');
-    var textUsers = ((cfg.text_download && cfg.text_download.user_list) || []).join('\n');
 
     container.innerHTML = '<div class="settings-layout">'
         + '<div class="setup-hero"><div><h2>' + zh('setupTitle') + '</h2><p>' + zh('setupCopy') + '</p></div><div class="setup-steps"><div class="setup-step"><strong>1</strong>' + zh('stepAccount') + '</div><div class="setup-step"><strong>2</strong>' + zh('stepPath') + '</div><div class="setup-step"><strong>3</strong>' + zh('stepDownload') + '</div></div></div>'
@@ -2169,33 +2454,12 @@ async function initSettings() {
         + '<div class="form-section"><h3>' + zh('account') + '</h3>'
         + '<div class="form-group"><label>Cookie</label><div class="secret-row"><textarea id="cfg_cookie" data-secret="1">' + esc(cfg.cookie || '') + '</textarea><button class="btn btn-secondary" onclick="clearSecretField(\'cfg_cookie\')">' + zh('replace') + '</button></div><div class="field-help">' + zh('cookieHelp') + '</div></div>'
         + '<div class="form-group"><label>Bearer Token</label><div class="secret-row"><textarea id="cfg_bearer_token" data-secret="1">' + esc(cfg.bearer_token || '') + '</textarea><button class="btn btn-secondary" onclick="clearSecretField(\'cfg_bearer_token\')">' + zh('replace') + '</button></div><div class="field-help">' + zh('tokenHelp') + '</div></div></div>'
-        + '<div class="form-section"><h3>' + zh('users') + '</h3><div class="form-group"><label>' + zh('userList') + '</label><textarea id="cfg_user_list" placeholder="openai&#10;github&#10;...">' + esc(users) + '</textarea><div class="field-help">' + zh('usersHelp') + '</div></div></div>'
         + '<div class="form-section"><h3>' + zh('network') + '</h3><div class="form-group"><label>' + zh('savePath') + '</label><div class="secret-row"><input id="cfg_save_path" value="' + esc(cfg.save_path || '') + '" placeholder="downloads"><button class="btn btn-secondary" type="button" onclick="pickSavePath()">' + zh('browseFolder') + '</button></div></div><div class="form-group"><label>' + zh('proxy') + '</label><input id="cfg_proxy" value="' + esc(cfg.proxy || '') + '" placeholder="http://127.0.0.1:7890"><div class="field-help">' + zh('proxyHelp') + '</div></div></div>'
         + '</div><div class="settings-side">'
-        + '<div class="form-section"><h3>' + zh('options') + '</h3><div class="form-row"><div class="form-group"><label>' + zh('timeRange') + '</label><input id="cfg_time_start" type="date"></div><div class="form-group"><label>&nbsp;</label><input id="cfg_time_end" type="date"></div></div>'
-        + '<div class="form-row"><div class="form-group"><label>' + zh('imageFormat') + '</label><select id="cfg_image_format"><option value="orig">orig</option><option value="jpg">jpg</option><option value="png">png</option></select></div><div class="form-group"><label>' + zh('concurrency') + '</label><input id="cfg_max_concurrent" type="number" min="1" max="32"></div></div>'
-        + '<div class="download-options"><label><input type="checkbox" id="cfg_has_video"> ' + zh('video') + '</label><label><input type="checkbox" id="cfg_has_retweet"> ' + zh('retweet') + '</label><label><input type="checkbox" id="cfg_has_highlights"> ' + zh('highlights') + '</label><label><input type="checkbox" id="cfg_has_likes"> ' + zh('likes') + '</label></div>'
-        + '<div class="form-row"><div class="form-group"><label>' + zh('cache') + '</label><select id="cfg_enable_cache"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('asyncDownload') + '</label><select id="cfg_async_enabled"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div><div class="form-group"><label>' + zh('downloadAutoSync') + '</label><select id="cfg_download_auto_sync"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
-        + '<div class="form-section"><h3>' + zh('tagSearch') + '</h3><div class="form-row"><div class="form-group"><label>' + zh('tag') + '</label><input id="cfg_tag_search_tag" value="' + esc((cfg.tag_search && cfg.tag_search.tag) || '') + '"></div><div class="form-group"><label>' + zh('filter') + '</label><input id="cfg_tag_search_filter" value="' + esc((cfg.tag_search && cfg.tag_search.filter) || '') + '"></div></div><div class="form-row"><div class="form-group"><label>' + zh('downloadCount') + '</label><input id="cfg_tag_search_count" type="number" min="1" value="' + esc((cfg.tag_search && cfg.tag_search.download_count) || 100) + '"></div><div class="form-group"><label>' + zh('mediaLatest') + '</label><select id="cfg_tag_search_media_latest"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div><div class="form-group"><label>' + zh('textMode') + '</label><select id="cfg_tag_search_text_mode"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
-        + '<div class="form-section"><h3>' + zh('listSync') + '</h3><div class="form-group"><label>' + zh('listId') + '</label><input id="cfg_list_id" value="' + esc((cfg.list_sync && cfg.list_sync.list_id) || '') + '"><div class="field-help">' + zh('listSyncHelp') + '</div></div><div class="form-group"><label>' + zh('listOwner') + '</label><input id="cfg_list_owner" value="' + esc((cfg.list_sync && cfg.list_sync.list_owner) || '') + '"></div><div class="form-group"><label>' + zh('listSlug') + '</label><input id="cfg_list_slug" value="' + esc((cfg.list_sync && cfg.list_sync.list_slug) || '') + '"></div><div class="form-group"><label>' + zh('autoSync') + '</label><select id="cfg_list_enabled"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
-        + '<div class="form-section"><h3>' + zh('textDownload') + '</h3><div class="form-group"><label>' + zh('textUsers') + '</label><textarea id="cfg_text_user_list" placeholder="openai&#10;github&#10;...">' + esc(textUsers) + '</textarea></div><div class="form-row"><div class="form-group"><label>' + zh('maxTweets') + '</label><input id="cfg_text_max_tweets" type="number" min="0" value="' + esc((cfg.text_download && cfg.text_download.max_tweets) || 500) + '"></div><div class="form-group"><label>' + zh('requestDelay') + '</label><input id="cfg_text_request_delay" type="number" min="0" step="0.1" value="' + esc((cfg.text_download && cfg.text_download.request_delay) || 2) + '"></div></div><div class="form-group"><label>' + zh('maxRetries') + '</label><input id="cfg_text_max_retries" type="number" min="0" value="' + esc((cfg.text_download && cfg.text_download.max_retries) || 3) + '"></div></div>'
         + '<div class="form-section"><h3>' + zh('advanced') + '</h3><div class="form-row"><div class="form-group"><label>' + zh('userRetries') + '</label><input id="cfg_max_user_retries" type="number" min="0"></div><div class="form-group"><label>' + zh('retryDelay') + '</label><input id="cfg_retry_delay" type="number" min="0"></div></div><div class="form-group"><label>' + zh('verboseLog') + '</label><select id="cfg_verbose"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('logFile') + '</label><input id="cfg_log_file" value="' + esc((cfg.logging && cfg.logging.log_file) || '') + '" placeholder="' + zh('logPlaceholder') + '"></div><div class="form-group"><label>' + zh('theme') + '</label><select id="cfg_theme" onchange="document.documentElement.dataset.theme=this.value"><option value="dark-glass">' + zh('darkTheme') + '</option><option value="magazine">' + zh('lightTheme') + '</option></select></div></div>'
         + '</div></div><div class="settings-actions"><button class="btn btn-primary" onclick="saveSettings()">' + zh('applyConfig') + '</button><button class="btn btn-secondary" onclick="checkConfigNow()">' + zh('checkNow') + '</button><button class="btn btn-secondary" onclick="initSettings()">' + zh('reload') + '</button></div></div>';
 
     document.getElementById('cfg_theme').value = theme;
-    setTimeRangeControls(cfg.time_range || '2015-01-01:2030-01-01');
-    document.getElementById('cfg_image_format').value = cfg.image_format || 'orig';
-    document.getElementById('cfg_has_video').checked = !cfg.mode || cfg.mode.has_video !== false;
-    document.getElementById('cfg_has_retweet').checked = !!(cfg.mode && cfg.mode.has_retweet);
-    document.getElementById('cfg_has_highlights').checked = !!(cfg.mode && cfg.mode.has_highlights);
-    document.getElementById('cfg_has_likes').checked = !!(cfg.mode && cfg.mode.has_likes);
-    document.getElementById('cfg_max_concurrent').value = (cfg.download && cfg.download.max_concurrent) || 16;
-    document.getElementById('cfg_enable_cache').value = !cfg.download || cfg.download.enable_cache !== false ? 'true' : 'false';
-    document.getElementById('cfg_async_enabled').value = !cfg.download || cfg.download.async_enabled !== false ? 'true' : 'false';
-    document.getElementById('cfg_download_auto_sync').value = cfg.download && cfg.download.auto_sync ? 'true' : 'false';
-    document.getElementById('cfg_tag_search_media_latest').value = cfg.tag_search && cfg.tag_search.media_latest ? 'true' : 'false';
-    document.getElementById('cfg_tag_search_text_mode').value = cfg.tag_search && cfg.tag_search.text_mode ? 'true' : 'false';
-    document.getElementById('cfg_list_enabled').value = !cfg.list_sync || cfg.list_sync.enabled !== false ? 'true' : 'false';
     document.getElementById('cfg_max_user_retries').value = (cfg.retry && cfg.retry.max_user_retries) || 3;
     document.getElementById('cfg_retry_delay').value = (cfg.retry && cfg.retry.delay_seconds) || 10;
     document.getElementById('cfg_verbose').value = cfg.logging && cfg.logging.verbose ? 'true' : 'false';
@@ -2249,67 +2513,18 @@ async function checkConfigNow() {
     toast(status.ready ? plainZh('configPassed') : plainZh('configMissing'), status.ready ? 'success' : 'error');
 }
 
-function readUserListFromSettings() {
-    return readLinesFromField('cfg_user_list');
-}
-
 function readLinesFromField(id) {
     return document.getElementById(id).value.split('\n').map(function(s) {
         return s.trim().replace(/^@/, '');
     }).filter(Boolean);
 }
 
-function setTimeRangeControls(value) {
-    var parts = (value || '2015-01-01:2030-01-01').split(':');
-    document.getElementById('cfg_time_start').value = parts[0] || '2015-01-01';
-    document.getElementById('cfg_time_end').value = parts[1] || '2030-01-01';
-}
-
-function buildTimeRange() {
-    var start = document.getElementById('cfg_time_start').value || '2015-01-01';
-    var end = document.getElementById('cfg_time_end').value || '2030-01-01';
-    if (start > end) {
-        var tmp = start;
-        start = end;
-        end = tmp;
-        document.getElementById('cfg_time_start').value = start;
-        document.getElementById('cfg_time_end').value = end;
-    }
-    return start + ':' + end;
-}
-
 async function saveSettings() {
-    var maxConcurrent = Math.max(1, Math.min(32, parseInt(document.getElementById('cfg_max_concurrent').value) || 16));
-    document.getElementById('cfg_max_concurrent').value = maxConcurrent;
     var payload = {
         cookie: document.getElementById('cfg_cookie').value,
         bearer_token: document.getElementById('cfg_bearer_token').value,
         proxy: document.getElementById('cfg_proxy').value.trim(),
         save_path: document.getElementById('cfg_save_path').value.trim(),
-        user_list: readUserListFromSettings(),
-        time_range: buildTimeRange(),
-        image_format: document.getElementById('cfg_image_format').value,
-        'mode.has_video': document.getElementById('cfg_has_video').checked,
-        'mode.has_retweet': document.getElementById('cfg_has_retweet').checked,
-        'mode.has_highlights': document.getElementById('cfg_has_highlights').checked,
-        'mode.has_likes': document.getElementById('cfg_has_likes').checked,
-        'download.max_concurrent': maxConcurrent,
-        'download.enable_cache': document.getElementById('cfg_enable_cache').value === 'true',
-        'download.async_enabled': document.getElementById('cfg_async_enabled').value === 'true',
-        'download.auto_sync': document.getElementById('cfg_download_auto_sync').value === 'true',
-        'list_sync.enabled': document.getElementById('cfg_list_enabled').value === 'true',
-        'list_sync.list_id': document.getElementById('cfg_list_id').value.trim(),
-        'list_sync.list_owner': document.getElementById('cfg_list_owner').value.trim(),
-        'list_sync.list_slug': document.getElementById('cfg_list_slug').value.trim(),
-        'tag_search.tag': document.getElementById('cfg_tag_search_tag').value.trim(),
-        'tag_search.filter': document.getElementById('cfg_tag_search_filter').value.trim(),
-        'tag_search.download_count': Math.max(1, parseInt(document.getElementById('cfg_tag_search_count').value) || 100),
-        'tag_search.media_latest': document.getElementById('cfg_tag_search_media_latest').value === 'true',
-        'tag_search.text_mode': document.getElementById('cfg_tag_search_text_mode').value === 'true',
-        'text_download.user_list': readLinesFromField('cfg_text_user_list'),
-        'text_download.max_tweets': Math.max(0, parseInt(document.getElementById('cfg_text_max_tweets').value) || 0),
-        'text_download.request_delay': Math.max(0, parseFloat(document.getElementById('cfg_text_request_delay').value) || 0),
-        'text_download.max_retries': Math.max(0, parseInt(document.getElementById('cfg_text_max_retries').value) || 0),
         'retry.max_user_retries': parseInt(document.getElementById('cfg_max_user_retries').value) || 3,
         'retry.delay_seconds': parseInt(document.getElementById('cfg_retry_delay').value) || 10,
         'logging.verbose': document.getElementById('cfg_verbose').value === 'true',

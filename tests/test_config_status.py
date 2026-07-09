@@ -2,6 +2,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import xdownloader_app.server as server
 from xdownloader_app.server import app, build_config_status, ensure_config_file, get_download_root
 
 
@@ -77,6 +78,69 @@ class ConfigStatusTest(unittest.TestCase):
 
             with open(config_path, "r", encoding="utf-8") as f:
                 self.assertIn('"save_path": "downloads"', f.read())
+
+    def test_download_pause_marks_paused_without_clearing_progress(self):
+        server.download_state = {
+            "running": True,
+            "paused": False,
+            "terminated": False,
+            "logs": [],
+            "current": 1,
+            "total": 3,
+            "stats": None,
+        }
+
+        response = app.test_client().post("/api/download/pause")
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({"ok": True, "state": "paused"}, response.get_json())
+        self.assertFalse(server.download_state["running"])
+        self.assertTrue(server.download_state["paused"])
+        self.assertFalse(server.download_state["terminated"])
+
+    def test_download_terminate_marks_terminated_and_clears_progress(self):
+        progress_path = server.download_progress_path()
+        with open(progress_path, "w", encoding="utf-8") as f:
+            f.write('{"completed": ["openai"]}')
+        server.download_state = {
+            "running": True,
+            "paused": False,
+            "terminated": False,
+            "logs": [],
+            "current": 1,
+            "total": 3,
+            "stats": None,
+        }
+
+        response = app.test_client().post("/api/download/terminate")
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({"ok": True, "state": "terminated"}, response.get_json())
+        self.assertFalse(server.download_state["running"])
+        self.assertFalse(server.download_state["paused"])
+        self.assertTrue(server.download_state["terminated"])
+        self.assertFalse(server.os.path.exists(progress_path))
+
+    def test_config_accepts_multiple_list_sync_entries(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = f"{temp_dir}/config.json"
+            with open(config_path, "w", encoding="utf-8") as f:
+                f.write('{"list_sync": {"enabled": true, "lists": []}}\n')
+            with patch.object(server, "CONFIG_PATH", config_path):
+                response = app.test_client().post(
+                    "/api/config",
+                    json={
+                        "list_sync.lists": [
+                            {"name": "AI", "list_id": "123", "enabled": True},
+                            {"name": "News", "list_id": "456", "enabled": False},
+                        ]
+                    },
+                )
+                self.assertEqual(200, response.status_code)
+                saved = server.load_config_data()
+
+        self.assertEqual("123", saved["list_sync"]["lists"][0]["list_id"])
+        self.assertEqual("456", saved["list_sync"]["lists"][1]["list_id"])
 
 
 if __name__ == "__main__":
