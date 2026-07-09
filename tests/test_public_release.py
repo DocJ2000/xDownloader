@@ -23,7 +23,7 @@ class PublicReleaseTest(unittest.TestCase):
         self.assertIn("python xdownloader.py", batch.read_text(encoding="utf-8"))
 
     def test_runtime_files_live_in_app_subfolder(self):
-        for name in ["server.py", "index.html", "main.py", "app.py", "src"]:
+        for name in ["server.py", "index.html", "main.py", "src"]:
             self.assertFalse((ROOT / name).exists(), f"{name} should not be in the public root")
             self.assertTrue((APP_DIR / name).exists(), f"{name} should live in xdownloader_app")
 
@@ -47,6 +47,23 @@ class PublicReleaseTest(unittest.TestCase):
             ".github/pull_request_template.md",
         ]:
             self.assertTrue((ROOT / name).exists(), f"{name} should exist")
+
+    def test_obsolete_internal_files_are_not_published(self):
+        obsolete_paths = [
+            "docs/README_修复指南.md",
+            "docs/superpowers",
+            "xdownloader_app/app.py",
+            "xdownloader_app/app.spec",
+            "xdownloader_app/start.bat",
+            "xdownloader_app/X-Download.spec",
+            "xdownloader_app/X-Download-debug.spec",
+            "xdownloader_app/_scan_all.py",
+            "xdownloader_app/_fix_all.py",
+            "xdownloader_app/_fix_orphan_rows.py",
+            "xdownloader_app/_fix_single_folder.py",
+        ]
+        for name in obsolete_paths:
+            self.assertFalse((ROOT / name).exists(), f"{name} should not be published")
 
 
 if __name__ == "__main__":
