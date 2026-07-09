@@ -704,6 +704,22 @@ def save_config_data(data):
         print(f"Failed to save config: {e}")
 
 
+def open_directory_dialog(initial_dir=''):
+    import tkinter as tk
+    from tkinter import filedialog
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    try:
+        kwargs = {'title': 'Select download folder'}
+        if initial_dir and os.path.isdir(initial_dir):
+            kwargs['initialdir'] = initial_dir
+        return filedialog.askdirectory(**kwargs)
+    finally:
+        root.destroy()
+
+
 def deep_set(d, key_path, value):
     keys = key_path.split('.')
     for k in keys[:-1]:
@@ -751,6 +767,15 @@ def api_stats():
 @app.route('/api/config/status')
 def api_config_status():
     return jsonify(build_config_status(load_config_data()))
+
+
+@app.route('/api/dialog/directory', methods=['POST'])
+def api_dialog_directory():
+    payload = request.get_json(silent=True) or {}
+    selected = open_directory_dialog((payload.get('initial_dir') or '').strip())
+    if not selected:
+        return jsonify({'ok': False, 'path': ''})
+    return jsonify({'ok': True, 'path': selected})
 
 
 @app.route('/api/search')

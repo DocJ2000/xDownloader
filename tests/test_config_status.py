@@ -1,7 +1,8 @@
 import tempfile
 import unittest
+from unittest.mock import patch
 
-from xdownloader_app.server import build_config_status, get_download_root
+from xdownloader_app.server import app, build_config_status, get_download_root
 
 
 class ConfigStatusTest(unittest.TestCase):
@@ -46,6 +47,24 @@ class ConfigStatusTest(unittest.TestCase):
         cfg = {"save_path": "downloads"}
 
         self.assertEqual("downloads", get_download_root(cfg))
+
+    def test_directory_picker_api_returns_selected_path(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch("xdownloader_app.server.open_directory_dialog", return_value=temp_dir):
+                response = app.test_client().post(
+                    "/api/dialog/directory",
+                    json={"initial_dir": "downloads"},
+                )
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({"ok": True, "path": temp_dir}, response.get_json())
+
+    def test_directory_picker_api_reports_cancel(self):
+        with patch("xdownloader_app.server.open_directory_dialog", return_value=""):
+            response = app.test_client().post("/api/dialog/directory", json={})
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({"ok": False, "path": ""}, response.get_json())
 
 
 if __name__ == "__main__":

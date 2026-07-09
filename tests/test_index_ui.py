@@ -40,6 +40,12 @@ class IndexUiTest(unittest.TestCase):
         self.assertIn("toggleLanguage()", self.html)
         self.assertIn("localStorage.getItem('xdl.language') || 'en'", self.html)
 
+    def test_settings_save_path_has_directory_picker(self):
+        self.assertIn("pickSavePath()", self.html)
+        self.assertIn("/api/dialog/directory", self.html)
+        self.assertIn("cfg_save_path", self.html)
+        self.assertIn("browseFolder", self.html)
+
 
 if __name__ == "__main__":
     unittest.main()

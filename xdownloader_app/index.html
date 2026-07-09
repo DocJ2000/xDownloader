@@ -510,6 +510,7 @@ body {
 .field-help { margin-top: 4px; color: var(--text-muted); font-size: 12px; line-height: 1.45; }
 .secret-row { display: flex; gap: 8px; align-items: flex-start; }
 .secret-row textarea { flex: 1; }
+.secret-row input { flex: 1; }
 .secret-row .btn { flex: 0 0 auto; padding: 8px 10px; }
 @media (max-width: 860px) {
     .home-hero, .home-columns { grid-template-columns: 1fr; }
@@ -2040,6 +2041,7 @@ function zh(s) {
         status: '&#x914d;&#x7f6e;&#x72b6;&#x6001;', ready: '&#x53ef;&#x5f00;&#x59cb;&#x4e0b;&#x8f7d;', needConfig: '&#x9700;&#x8981;&#x8865;&#x5145;&#x914d;&#x7f6e;',
         currentUsers: '&#x5f53;&#x524d;&#x7528;&#x6237;&#x6570;&#xff1a;', pathExists: '&#x5df2;&#x5b58;&#x5728;&#x3002;', pathUnknown: '&#x5c1a;&#x672a;&#x786e;&#x8ba4;&#x5b58;&#x5728;&#x3002;',
         saved: '&#x914d;&#x7f6e;&#x5df2;&#x4fdd;&#x5b58;', saveFailed: '&#x4fdd;&#x5b58;&#x5931;&#x8d25;', pathNotFound: '&#x4fdd;&#x5b58;&#x8def;&#x5f84;&#x4e0d;&#x5b58;&#x5728;',
+        browseFolder: '&#x6d4f;&#x89c8;', chooseFolderFailed: '&#x6253;&#x5f00;&#x6587;&#x4ef6;&#x5939;&#x9009;&#x62e9;&#x5668;&#x5931;&#x8d25;',
         setupTitle: '&#x914d;&#x7f6e;&#x4e2d;&#x5fc3;', setupCopy: '&#x628a;&#x6bcf;&#x4e2a;&#x4eba;&#x90fd;&#x9700;&#x8981;&#x6539;&#x7684;&#x9879;&#x76ee;&#x96c6;&#x4e2d;&#x5728;&#x8fd9;&#x91cc;&#xff1a;&#x8d26;&#x53f7;&#x51ed;&#x8bc1;&#x3001;&#x4fdd;&#x5b58;&#x8def;&#x5f84;&#x3001;&#x4ee3;&#x7406;&#x548c;&#x4e0b;&#x8f7d;&#x540d;&#x5355;&#x3002;',
         stepAccount: '&#x586b;&#x8d26;&#x53f7;', stepPath: '&#x9009;&#x8def;&#x5f84;', stepDownload: '&#x5f00;&#x59cb;&#x4e0b;&#x8f7d;',
         checkNow: '&#x7acb;&#x5373;&#x68c0;&#x6d4b;', configPassed: '&#x914d;&#x7f6e;&#x68c0;&#x67e5;&#x901a;&#x8fc7;', configMissing: '&#x914d;&#x7f6e;&#x8fd8;&#x7f3a;&#x9879;&#x76ee;',
@@ -2090,6 +2092,8 @@ function zh(s) {
             saved: 'Config saved',
             saveFailed: 'Save failed',
             pathNotFound: 'Save path does not exist',
+            browseFolder: 'Browse',
+            chooseFolderFailed: 'Could not open folder picker',
             setupTitle: 'Configuration',
             setupCopy: 'Personal settings live here: account credentials, save path, proxy, and the download user list.',
             stepAccount: 'Account',
@@ -2145,7 +2149,7 @@ async function initSettings() {
         + '<div class="form-group"><label>Cookie</label><div class="secret-row"><textarea id="cfg_cookie" data-secret="1">' + esc(cfg.cookie || '') + '</textarea><button class="btn btn-secondary" onclick="clearSecretField(\'cfg_cookie\')">' + zh('replace') + '</button></div><div class="field-help">' + zh('cookieHelp') + '</div></div>'
         + '<div class="form-group"><label>Bearer Token</label><div class="secret-row"><textarea id="cfg_bearer_token" data-secret="1">' + esc(cfg.bearer_token || '') + '</textarea><button class="btn btn-secondary" onclick="clearSecretField(\'cfg_bearer_token\')">' + zh('replace') + '</button></div><div class="field-help">' + zh('tokenHelp') + '</div></div></div>'
         + '<div class="form-section"><h3>' + zh('users') + '</h3><div class="form-group"><label>' + zh('userList') + '</label><textarea id="cfg_user_list" placeholder="openai&#10;github&#10;...">' + esc(users) + '</textarea><div class="field-help">' + zh('usersHelp') + '</div></div></div>'
-        + '<div class="form-section"><h3>' + zh('network') + '</h3><div class="form-group"><label>' + zh('savePath') + '</label><input id="cfg_save_path" value="' + esc(cfg.save_path || '') + '" placeholder="downloads"></div><div class="form-group"><label>' + zh('proxy') + '</label><input id="cfg_proxy" value="' + esc(cfg.proxy || '') + '" placeholder="http://127.0.0.1:7890"><div class="field-help">' + zh('proxyHelp') + '</div></div></div>'
+        + '<div class="form-section"><h3>' + zh('network') + '</h3><div class="form-group"><label>' + zh('savePath') + '</label><div class="secret-row"><input id="cfg_save_path" value="' + esc(cfg.save_path || '') + '" placeholder="downloads"><button class="btn btn-secondary" type="button" onclick="pickSavePath()">' + zh('browseFolder') + '</button></div></div><div class="form-group"><label>' + zh('proxy') + '</label><input id="cfg_proxy" value="' + esc(cfg.proxy || '') + '" placeholder="http://127.0.0.1:7890"><div class="field-help">' + zh('proxyHelp') + '</div></div></div>'
         + '</div><div class="settings-side">'
         + '<div class="form-section"><h3>' + zh('options') + '</h3><div class="form-group"><label>' + zh('timeRange') + '</label><input id="cfg_time_range" value="' + esc(cfg.time_range || '') + '" placeholder="2015-01-01:2030-01-01"></div>'
         + '<div class="form-row"><div class="form-group"><label>' + zh('imageFormat') + '</label><select id="cfg_image_format"><option value="orig">orig</option><option value="jpg">jpg</option><option value="png">png</option></select></div><div class="form-group"><label>' + zh('concurrency') + '</label><input id="cfg_max_concurrent" type="number" min="1" max="32"></div></div>'
@@ -2174,6 +2178,25 @@ function clearSecretField(id) {
     var el = document.getElementById(id);
     el.value = '';
     el.focus();
+}
+
+async function pickSavePath() {
+    var input = document.getElementById('cfg_save_path');
+    if (!input) return;
+    try {
+        var response = await fetch('/api/dialog/directory', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({initial_dir: input.value.trim()})
+        });
+        var data = await response.json();
+        if (data.ok && data.path) {
+            input.value = data.path;
+            input.focus();
+        }
+    } catch(e) {
+        toast(plainZh('chooseFolderFailed'), 'error');
+    }
 }
 
 function renderConfigStatus(status) {
