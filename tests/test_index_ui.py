@@ -46,6 +46,28 @@ class IndexUiTest(unittest.TestCase):
         self.assertIn("cfg_save_path", self.html)
         self.assertIn("browseFolder", self.html)
 
+    def test_settings_cover_all_user_config_sections(self):
+        expected_controls = [
+            "cfg_download_auto_sync",
+            "cfg_verbose",
+            "cfg_tag_search_tag",
+            "cfg_tag_search_filter",
+            "cfg_tag_search_count",
+            "cfg_tag_search_media_latest",
+            "cfg_tag_search_text_mode",
+            "cfg_text_user_list",
+            "cfg_text_max_tweets",
+            "cfg_text_request_delay",
+            "cfg_text_max_retries",
+        ]
+        for control_id in expected_controls:
+            self.assertIn(control_id, self.html)
+
+    def test_settings_use_apply_language(self):
+        self.assertIn("applyConfig", self.html)
+        self.assertIn("Applied", self.html)
+        self.assertIn("应用", self.html)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -10,7 +11,7 @@ from .utils import str_to_timestamp
 
 
 APP_DIR = Path(__file__).resolve().parents[1]
-PROJECT_ROOT = APP_DIR.parent
+PROJECT_ROOT = Path(os.path.dirname(sys.executable)) if getattr(sys, "frozen", False) else APP_DIR.parent
 
 
 @dataclass

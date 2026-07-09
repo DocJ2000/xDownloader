@@ -2037,11 +2037,13 @@ function zh(s) {
         cache: '&#x7f13;&#x5b58;', asyncDownload: '&#x5f02;&#x6b65;&#x4e0b;&#x8f7d;', enabled: '&#x542f;&#x7528;', disabled: '&#x7981;&#x7528;',
         listSync: '&#x5217;&#x8868;&#x540c;&#x6b65;', autoSync: '&#x81ea;&#x52a8;&#x540c;&#x6b65;', advanced: '&#x9ad8;&#x7ea7;',
         userRetries: '&#x7528;&#x6237;&#x91cd;&#x8bd5;&#x6b21;&#x6570;', retryDelay: '&#x91cd;&#x8bd5;&#x95f4;&#x9694;&#x79d2;', logFile: '&#x65e5;&#x5fd7;&#x6587;&#x4ef6;',
-        theme: '&#x4e3b;&#x9898;', darkTheme: '&#x6697;&#x8272;&#x73bb;&#x7483;', lightTheme: '&#x6742;&#x5fd7;&#x6d45;&#x8272;', save: '&#x4fdd;&#x5b58;&#x914d;&#x7f6e;', reload: '&#x91cd;&#x65b0;&#x52a0;&#x8f7d;',
+        theme: '&#x4e3b;&#x9898;', darkTheme: '&#x6697;&#x8272;&#x73bb;&#x7483;', lightTheme: '&#x6742;&#x5fd7;&#x6d45;&#x8272;', save: '&#x4fdd;&#x5b58;&#x914d;&#x7f6e;', applyConfig: '应用', reload: '&#x91cd;&#x65b0;&#x52a0;&#x8f7d;',
         status: '&#x914d;&#x7f6e;&#x72b6;&#x6001;', ready: '&#x53ef;&#x5f00;&#x59cb;&#x4e0b;&#x8f7d;', needConfig: '&#x9700;&#x8981;&#x8865;&#x5145;&#x914d;&#x7f6e;',
         currentUsers: '&#x5f53;&#x524d;&#x7528;&#x6237;&#x6570;&#xff1a;', pathExists: '&#x5df2;&#x5b58;&#x5728;&#x3002;', pathUnknown: '&#x5c1a;&#x672a;&#x786e;&#x8ba4;&#x5b58;&#x5728;&#x3002;',
-        saved: '&#x914d;&#x7f6e;&#x5df2;&#x4fdd;&#x5b58;', saveFailed: '&#x4fdd;&#x5b58;&#x5931;&#x8d25;', pathNotFound: '&#x4fdd;&#x5b58;&#x8def;&#x5f84;&#x4e0d;&#x5b58;&#x5728;',
+        saved: '&#x914d;&#x7f6e;&#x5df2;&#x5e94;&#x7528;', saveFailed: '&#x5e94;&#x7528;&#x5931;&#x8d25;', pathNotFound: '&#x4fdd;&#x5b58;&#x8def;&#x5f84;&#x4e0d;&#x5b58;&#x5728;',
         browseFolder: '&#x6d4f;&#x89c8;', chooseFolderFailed: '&#x6253;&#x5f00;&#x6587;&#x4ef6;&#x5939;&#x9009;&#x62e9;&#x5668;&#x5931;&#x8d25;',
+        tagSearch: '&#x6807;&#x7b7e;&#x641c;&#x7d22;', tag: '&#x5173;&#x952e;&#x8bcd;', filter: '&#x8fc7;&#x6ee4;&#x6761;&#x4ef6;', downloadCount: '&#x4e0b;&#x8f7d;&#x6570;&#x91cf;', mediaLatest: '&#x4f18;&#x5148;&#x6700;&#x65b0;&#x5a92;&#x4f53;', textMode: '&#x6587;&#x672c;&#x6a21;&#x5f0f;',
+        textDownload: '&#x6587;&#x672c;&#x4e0b;&#x8f7d;', textUsers: '&#x6587;&#x672c;&#x7528;&#x6237;', maxTweets: '&#x6700;&#x5927;&#x63a8;&#x6587;&#x6570;', requestDelay: '&#x8bf7;&#x6c42;&#x95f4;&#x9694;', maxRetries: '&#x6700;&#x5927;&#x91cd;&#x8bd5;', verboseLog: '&#x8be6;&#x7ec6;&#x65e5;&#x5fd7;', downloadAutoSync: '&#x4e0b;&#x8f7d;&#x65f6;&#x81ea;&#x52a8;&#x540c;&#x6b65;',
         setupTitle: '&#x914d;&#x7f6e;&#x4e2d;&#x5fc3;', setupCopy: '&#x628a;&#x6bcf;&#x4e2a;&#x4eba;&#x90fd;&#x9700;&#x8981;&#x6539;&#x7684;&#x9879;&#x76ee;&#x96c6;&#x4e2d;&#x5728;&#x8fd9;&#x91cc;&#xff1a;&#x8d26;&#x53f7;&#x51ed;&#x8bc1;&#x3001;&#x4fdd;&#x5b58;&#x8def;&#x5f84;&#x3001;&#x4ee3;&#x7406;&#x548c;&#x4e0b;&#x8f7d;&#x540d;&#x5355;&#x3002;',
         stepAccount: '&#x586b;&#x8d26;&#x53f7;', stepPath: '&#x9009;&#x8def;&#x5f84;', stepDownload: '&#x5f00;&#x59cb;&#x4e0b;&#x8f7d;',
         checkNow: '&#x7acb;&#x5373;&#x68c0;&#x6d4b;', configPassed: '&#x914d;&#x7f6e;&#x68c0;&#x67e5;&#x901a;&#x8fc7;', configMissing: '&#x914d;&#x7f6e;&#x8fd8;&#x7f3a;&#x9879;&#x76ee;',
@@ -2082,6 +2084,7 @@ function zh(s) {
             darkTheme: 'Dark glass',
             lightTheme: 'Magazine light',
             save: 'Save config',
+            applyConfig: 'Apply',
             reload: 'Reload',
             status: 'Config status',
             ready: 'Ready to download',
@@ -2089,11 +2092,24 @@ function zh(s) {
             currentUsers: 'Current users: ',
             pathExists: ' exists.',
             pathUnknown: ' has not been confirmed.',
-            saved: 'Config saved',
-            saveFailed: 'Save failed',
+            saved: 'Applied',
+            saveFailed: 'Apply failed',
             pathNotFound: 'Save path does not exist',
             browseFolder: 'Browse',
             chooseFolderFailed: 'Could not open folder picker',
+            tagSearch: 'Tag Search',
+            tag: 'Keyword',
+            filter: 'Filter',
+            downloadCount: 'Download count',
+            mediaLatest: 'Media latest',
+            textMode: 'Text mode',
+            textDownload: 'Text Download',
+            textUsers: 'Text users',
+            maxTweets: 'Max tweets',
+            requestDelay: 'Request delay',
+            maxRetries: 'Max retries',
+            verboseLog: 'Verbose log',
+            downloadAutoSync: 'Auto sync while downloading',
             setupTitle: 'Configuration',
             setupCopy: 'Personal settings live here: account credentials, save path, proxy, and the download user list.',
             stepAccount: 'Account',
@@ -2140,6 +2156,7 @@ async function initSettings() {
     var container = document.getElementById('tab-settings');
     var theme = cfg.theme || document.documentElement.dataset.theme || 'dark-glass';
     var users = (cfg.user_list || []).join('\n');
+    var textUsers = ((cfg.text_download && cfg.text_download.user_list) || []).join('\n');
 
     container.innerHTML = '<div class="settings-layout">'
         + '<div class="setup-hero"><div><h2>' + zh('setupTitle') + '</h2><p>' + zh('setupCopy') + '</p></div><div class="setup-steps"><div class="setup-step"><strong>1</strong>' + zh('stepAccount') + '</div><div class="setup-step"><strong>2</strong>' + zh('stepPath') + '</div><div class="setup-step"><strong>3</strong>' + zh('stepDownload') + '</div></div></div>'
@@ -2154,10 +2171,12 @@ async function initSettings() {
         + '<div class="form-section"><h3>' + zh('options') + '</h3><div class="form-group"><label>' + zh('timeRange') + '</label><input id="cfg_time_range" value="' + esc(cfg.time_range || '') + '" placeholder="2015-01-01:2030-01-01"></div>'
         + '<div class="form-row"><div class="form-group"><label>' + zh('imageFormat') + '</label><select id="cfg_image_format"><option value="orig">orig</option><option value="jpg">jpg</option><option value="png">png</option></select></div><div class="form-group"><label>' + zh('concurrency') + '</label><input id="cfg_max_concurrent" type="number" min="1" max="32"></div></div>'
         + '<div class="download-options"><label><input type="checkbox" id="cfg_has_video"> ' + zh('video') + '</label><label><input type="checkbox" id="cfg_has_retweet"> ' + zh('retweet') + '</label><label><input type="checkbox" id="cfg_has_highlights"> ' + zh('highlights') + '</label><label><input type="checkbox" id="cfg_has_likes"> ' + zh('likes') + '</label></div>'
-        + '<div class="form-row"><div class="form-group"><label>' + zh('cache') + '</label><select id="cfg_enable_cache"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('asyncDownload') + '</label><select id="cfg_async_enabled"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div></div>'
+        + '<div class="form-row"><div class="form-group"><label>' + zh('cache') + '</label><select id="cfg_enable_cache"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('asyncDownload') + '</label><select id="cfg_async_enabled"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div><div class="form-group"><label>' + zh('downloadAutoSync') + '</label><select id="cfg_download_auto_sync"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
+        + '<div class="form-section"><h3>' + zh('tagSearch') + '</h3><div class="form-row"><div class="form-group"><label>' + zh('tag') + '</label><input id="cfg_tag_search_tag" value="' + esc((cfg.tag_search && cfg.tag_search.tag) || '') + '"></div><div class="form-group"><label>' + zh('filter') + '</label><input id="cfg_tag_search_filter" value="' + esc((cfg.tag_search && cfg.tag_search.filter) || '') + '"></div></div><div class="form-row"><div class="form-group"><label>' + zh('downloadCount') + '</label><input id="cfg_tag_search_count" type="number" min="1" value="' + esc((cfg.tag_search && cfg.tag_search.download_count) || 100) + '"></div><div class="form-group"><label>' + zh('mediaLatest') + '</label><select id="cfg_tag_search_media_latest"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div><div class="form-group"><label>' + zh('textMode') + '</label><select id="cfg_tag_search_text_mode"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
         + '<div class="form-section"><h3>' + zh('listSync') + '</h3><div class="form-group"><label>List ID</label><input id="cfg_list_id" value="' + esc((cfg.list_sync && cfg.list_sync.list_id) || '') + '"></div><div class="form-group"><label>List Owner</label><input id="cfg_list_owner" value="' + esc((cfg.list_sync && cfg.list_sync.list_owner) || '') + '"></div><div class="form-group"><label>List Slug</label><input id="cfg_list_slug" value="' + esc((cfg.list_sync && cfg.list_sync.list_slug) || '') + '"></div><div class="form-group"><label>' + zh('autoSync') + '</label><select id="cfg_list_enabled"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
-        + '<div class="form-section"><h3>' + zh('advanced') + '</h3><div class="form-row"><div class="form-group"><label>' + zh('userRetries') + '</label><input id="cfg_max_user_retries" type="number" min="0"></div><div class="form-group"><label>' + zh('retryDelay') + '</label><input id="cfg_retry_delay" type="number" min="0"></div></div><div class="form-group"><label>' + zh('logFile') + '</label><input id="cfg_log_file" value="' + esc((cfg.logging && cfg.logging.log_file) || '') + '" placeholder="' + zh('logPlaceholder') + '"></div><div class="form-group"><label>' + zh('theme') + '</label><select id="cfg_theme" onchange="document.documentElement.dataset.theme=this.value"><option value="dark-glass">' + zh('darkTheme') + '</option><option value="magazine">' + zh('lightTheme') + '</option></select></div></div>'
-        + '</div></div><div class="settings-actions"><button class="btn btn-primary" onclick="saveSettings()">' + zh('save') + '</button><button class="btn btn-secondary" onclick="checkConfigNow()">' + zh('checkNow') + '</button><button class="btn btn-secondary" onclick="initSettings()">' + zh('reload') + '</button></div></div>';
+        + '<div class="form-section"><h3>' + zh('textDownload') + '</h3><div class="form-group"><label>' + zh('textUsers') + '</label><textarea id="cfg_text_user_list" placeholder="openai&#10;github&#10;...">' + esc(textUsers) + '</textarea></div><div class="form-row"><div class="form-group"><label>' + zh('maxTweets') + '</label><input id="cfg_text_max_tweets" type="number" min="0" value="' + esc((cfg.text_download && cfg.text_download.max_tweets) || 500) + '"></div><div class="form-group"><label>' + zh('requestDelay') + '</label><input id="cfg_text_request_delay" type="number" min="0" step="0.1" value="' + esc((cfg.text_download && cfg.text_download.request_delay) || 2) + '"></div></div><div class="form-group"><label>' + zh('maxRetries') + '</label><input id="cfg_text_max_retries" type="number" min="0" value="' + esc((cfg.text_download && cfg.text_download.max_retries) || 3) + '"></div></div>'
+        + '<div class="form-section"><h3>' + zh('advanced') + '</h3><div class="form-row"><div class="form-group"><label>' + zh('userRetries') + '</label><input id="cfg_max_user_retries" type="number" min="0"></div><div class="form-group"><label>' + zh('retryDelay') + '</label><input id="cfg_retry_delay" type="number" min="0"></div></div><div class="form-group"><label>' + zh('verboseLog') + '</label><select id="cfg_verbose"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('logFile') + '</label><input id="cfg_log_file" value="' + esc((cfg.logging && cfg.logging.log_file) || '') + '" placeholder="' + zh('logPlaceholder') + '"></div><div class="form-group"><label>' + zh('theme') + '</label><select id="cfg_theme" onchange="document.documentElement.dataset.theme=this.value"><option value="dark-glass">' + zh('darkTheme') + '</option><option value="magazine">' + zh('lightTheme') + '</option></select></div></div>'
+        + '</div></div><div class="settings-actions"><button class="btn btn-primary" onclick="saveSettings()">' + zh('applyConfig') + '</button><button class="btn btn-secondary" onclick="checkConfigNow()">' + zh('checkNow') + '</button><button class="btn btn-secondary" onclick="initSettings()">' + zh('reload') + '</button></div></div>';
 
     document.getElementById('cfg_theme').value = theme;
     document.getElementById('cfg_image_format').value = cfg.image_format || 'orig';
@@ -2168,9 +2187,13 @@ async function initSettings() {
     document.getElementById('cfg_max_concurrent').value = (cfg.download && cfg.download.max_concurrent) || 16;
     document.getElementById('cfg_enable_cache').value = !cfg.download || cfg.download.enable_cache !== false ? 'true' : 'false';
     document.getElementById('cfg_async_enabled').value = !cfg.download || cfg.download.async_enabled !== false ? 'true' : 'false';
+    document.getElementById('cfg_download_auto_sync').value = cfg.download && cfg.download.auto_sync ? 'true' : 'false';
+    document.getElementById('cfg_tag_search_media_latest').value = cfg.tag_search && cfg.tag_search.media_latest ? 'true' : 'false';
+    document.getElementById('cfg_tag_search_text_mode').value = cfg.tag_search && cfg.tag_search.text_mode ? 'true' : 'false';
     document.getElementById('cfg_list_enabled').value = !cfg.list_sync || cfg.list_sync.enabled !== false ? 'true' : 'false';
     document.getElementById('cfg_max_user_retries').value = (cfg.retry && cfg.retry.max_user_retries) || 3;
     document.getElementById('cfg_retry_delay').value = (cfg.retry && cfg.retry.delay_seconds) || 10;
+    document.getElementById('cfg_verbose').value = cfg.logging && cfg.logging.verbose ? 'true' : 'false';
     renderConfigStatus(status);
 }
 
@@ -2222,7 +2245,11 @@ async function checkConfigNow() {
 }
 
 function readUserListFromSettings() {
-    return document.getElementById('cfg_user_list').value.split('\n').map(function(s) {
+    return readLinesFromField('cfg_user_list');
+}
+
+function readLinesFromField(id) {
+    return document.getElementById(id).value.split('\n').map(function(s) {
         return s.trim().replace(/^@/, '');
     }).filter(Boolean);
 }
@@ -2245,12 +2272,23 @@ async function saveSettings() {
         'download.max_concurrent': maxConcurrent,
         'download.enable_cache': document.getElementById('cfg_enable_cache').value === 'true',
         'download.async_enabled': document.getElementById('cfg_async_enabled').value === 'true',
+        'download.auto_sync': document.getElementById('cfg_download_auto_sync').value === 'true',
         'list_sync.enabled': document.getElementById('cfg_list_enabled').value === 'true',
         'list_sync.list_id': document.getElementById('cfg_list_id').value.trim(),
         'list_sync.list_owner': document.getElementById('cfg_list_owner').value.trim(),
         'list_sync.list_slug': document.getElementById('cfg_list_slug').value.trim(),
+        'tag_search.tag': document.getElementById('cfg_tag_search_tag').value.trim(),
+        'tag_search.filter': document.getElementById('cfg_tag_search_filter').value.trim(),
+        'tag_search.download_count': Math.max(1, parseInt(document.getElementById('cfg_tag_search_count').value) || 100),
+        'tag_search.media_latest': document.getElementById('cfg_tag_search_media_latest').value === 'true',
+        'tag_search.text_mode': document.getElementById('cfg_tag_search_text_mode').value === 'true',
+        'text_download.user_list': readLinesFromField('cfg_text_user_list'),
+        'text_download.max_tweets': Math.max(0, parseInt(document.getElementById('cfg_text_max_tweets').value) || 0),
+        'text_download.request_delay': Math.max(0, parseFloat(document.getElementById('cfg_text_request_delay').value) || 0),
+        'text_download.max_retries': Math.max(0, parseInt(document.getElementById('cfg_text_max_retries').value) || 0),
         'retry.max_user_retries': parseInt(document.getElementById('cfg_max_user_retries').value) || 3,
         'retry.delay_seconds': parseInt(document.getElementById('cfg_retry_delay').value) || 10,
+        'logging.verbose': document.getElementById('cfg_verbose').value === 'true',
         'logging.log_file': document.getElementById('cfg_log_file').value.trim(),
         theme: document.getElementById('cfg_theme').value
     };

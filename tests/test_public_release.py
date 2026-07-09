@@ -20,6 +20,7 @@ class PublicReleaseTest(unittest.TestCase):
         self.assertTrue(launcher.exists())
         self.assertTrue(batch.exists())
         self.assertIn("from xdownloader_app.server import main", launcher.read_text(encoding="utf-8"))
+        self.assertIn("--smoke-test", launcher.read_text(encoding="utf-8"))
         self.assertIn("python xdownloader.py", batch.read_text(encoding="utf-8"))
 
     def test_runtime_files_live_in_app_subfolder(self):
@@ -64,6 +65,18 @@ class PublicReleaseTest(unittest.TestCase):
         ]
         for name in obsolete_paths:
             self.assertFalse((ROOT / name).exists(), f"{name} should not be published")
+
+    def test_windows_exe_packaging_is_reproducible_without_committing_artifacts(self):
+        build_script = ROOT / "packaging" / "build_windows_exe.ps1"
+        workflow = ROOT / ".github" / "workflows" / "build-windows-exe.yml"
+        gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+
+        self.assertTrue(build_script.exists())
+        self.assertIn("pyinstaller", build_script.read_text(encoding="utf-8").lower())
+        self.assertTrue(workflow.exists())
+        self.assertIn("softprops/action-gh-release", workflow.read_text(encoding="utf-8"))
+        for ignored in ["build/", "dist/", "release/", "*.spec"]:
+            self.assertIn(ignored, gitignore)
 
 
 if __name__ == "__main__":

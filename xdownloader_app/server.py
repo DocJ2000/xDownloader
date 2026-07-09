@@ -10,12 +10,15 @@ from io import StringIO
 from flask import Flask, jsonify, request, send_file, Response
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(APP_DIR)
+IS_FROZEN = getattr(sys, 'frozen', False)
+PROJECT_ROOT = os.path.dirname(sys.executable) if IS_FROZEN else os.path.dirname(APP_DIR)
+ASSET_ROOT = os.path.join(getattr(sys, '_MEIPASS', APP_DIR), 'xdownloader_app') if IS_FROZEN else APP_DIR
 CONFIG_PATH = os.path.join(PROJECT_ROOT, 'config.json')
+BUNDLED_CONFIG_EXAMPLE = os.path.join(getattr(sys, '_MEIPASS', PROJECT_ROOT), 'config.example.json')
 DOWNLOAD_ROOT = os.path.join(PROJECT_ROOT, 'downloads')
 PORT = 8765
 
-_BASE_DIR = getattr(sys, '_MEIPASS', APP_DIR)
+_BASE_DIR = ASSET_ROOT
 
 app = Flask(__name__, static_folder=None)
 
@@ -685,12 +688,76 @@ def search_users_and_tweets(query):
 
 
 def load_config_data():
+    ensure_config_file()
     try:
         with open(CONFIG_PATH, 'r', encoding='utf-8-sig') as f:
             return json.load(f)
     except (OSError, json.JSONDecodeError) as e:
         print(f"Failed to load config: {e}")
         return {}
+
+
+def ensure_config_file(config_path=CONFIG_PATH, example_path=BUNDLED_CONFIG_EXAMPLE):
+    if os.path.exists(config_path):
+        return
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    if os.path.exists(example_path):
+        with open(example_path, 'r', encoding='utf-8-sig') as src:
+            data = src.read()
+    else:
+        data = json.dumps({
+            "save_path": "downloads",
+            "user_list": [],
+            "cookie": "",
+            "bearer_token": "",
+            "proxy": "",
+            "time_range": "2015-01-01:2030-01-01",
+            "image_format": "orig",
+            "mode": {
+                "has_video": True,
+                "has_retweet": False,
+                "has_highlights": False,
+                "has_likes": False
+            },
+            "download": {
+                "max_concurrent": 16,
+                "async_enabled": True,
+                "enable_cache": True,
+                "auto_sync": False
+            },
+            "list_sync": {
+                "enabled": False,
+                "list_id": "",
+                "list_owner": "",
+                "list_slug": ""
+            },
+            "retry": {
+                "max_user_retries": 3,
+                "delay_seconds": 10
+            },
+            "logging": {
+                "verbose": False,
+                "log_file": ""
+            },
+            "tag_search": {
+                "tag": "",
+                "filter": "",
+                "download_count": 100,
+                "media_latest": False,
+                "text_mode": False
+            },
+            "text_download": {
+                "user_list": [],
+                "max_tweets": 500,
+                "request_delay": 2,
+                "max_retries": 3
+            },
+            "theme": "dark-glass"
+        }, indent=4)
+    with open(config_path, 'w', encoding='utf-8') as dst:
+        dst.write(data)
+        if not data.endswith('\n'):
+            dst.write('\n')
 
 
 def save_config_data(data):

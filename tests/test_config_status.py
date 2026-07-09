@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from xdownloader_app.server import app, build_config_status, get_download_root
+from xdownloader_app.server import app, build_config_status, ensure_config_file, get_download_root
 
 
 class ConfigStatusTest(unittest.TestCase):
@@ -65,6 +65,18 @@ class ConfigStatusTest(unittest.TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertEqual({"ok": False, "path": ""}, response.get_json())
+
+    def test_missing_config_is_created_from_example_for_packaged_app(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = f"{temp_dir}/config.json"
+            example_path = f"{temp_dir}/config.example.json"
+            with open(example_path, "w", encoding="utf-8") as f:
+                f.write('{"save_path": "downloads", "user_list": []}\n')
+
+            ensure_config_file(config_path=config_path, example_path=example_path)
+
+            with open(config_path, "r", encoding="utf-8") as f:
+                self.assertIn('"save_path": "downloads"', f.read())
 
 
 if __name__ == "__main__":

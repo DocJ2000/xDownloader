@@ -28,7 +28,10 @@ venv/
 # Build outputs
 build/
 dist/
+release/
+*.spec
 *.spec~
+*.zip
 
 # Temporary files
 *.tmp
