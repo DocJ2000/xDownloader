@@ -1,0 +1,52 @@
+{
+    "save_path": "downloads",
+    "user_list": [
+        "example_user"
+    ],
+    "cookie": "",
+    "bearer_token": "",
+    "proxy": "",
+    "time_range": "2015-01-01:2030-01-01",
+    "image_format": "orig",
+    "mode": {
+        "has_video": true,
+        "has_retweet": false,
+        "has_highlights": false,
+        "has_likes": false
+    },
+    "download": {
+        "max_concurrent": 16,
+        "async_enabled": true,
+        "enable_cache": true,
+        "auto_sync": false
+    },
+    "list_sync": {
+        "enabled": false,
+        "list_id": "",
+        "list_owner": "",
+        "list_slug": ""
+    },
+    "retry": {
+        "max_user_retries": 3,
+        "delay_seconds": 10
+    },
+    "logging": {
+        "verbose": false,
+        "log_file": ""
+    },
+    "tag_search": {
+        "tag": "",
+        "filter": "",
+        "download_count": 100,
+        "media_latest": false,
+        "text_mode": false
+    },
+    "text_download": {
+        "user_list": [],
+        "max_tweets": 500,
+        "request_delay": 2,
+        "max_retries": 3
+    },
+    "theme": "dark-glass"
+}
+

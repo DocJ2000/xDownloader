@@ -1,0 +1,38 @@
+# Local secrets and personal settings
+config.json
+config.local.json
+*.local.json
+*.env
+.env*
+
+# Downloaded media and generated data
+downloads/
+Download/
+data/
+cache/
+logs/
+*.log
+download_progress.json
+xdownloader_app/download_progress.json
+config.json.tmp
+
+# Python/runtime artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Build outputs
+build/
+dist/
+*.spec~
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
