@@ -68,6 +68,19 @@ class IndexUiTest(unittest.TestCase):
         self.assertIn("Applied", self.html)
         self.assertIn("应用", self.html)
 
+    def test_time_range_uses_date_controls(self):
+        self.assertIn('id="cfg_time_start"', self.html)
+        self.assertIn('id="cfg_time_end"', self.html)
+        self.assertIn('type="date"', self.html)
+        self.assertIn("buildTimeRange()", self.html)
+
+    def test_list_sync_labels_and_help_are_bilingual(self):
+        for key in ["listId", "listOwner", "listSlug", "listSyncHelp"]:
+            self.assertIn(key, self.html)
+        self.assertIn("cfg_list_id", self.html)
+        self.assertIn("cfg_list_owner", self.html)
+        self.assertIn("cfg_list_slug", self.html)
+
 
 if __name__ == "__main__":
     unittest.main()

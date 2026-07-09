@@ -68,15 +68,29 @@ class PublicReleaseTest(unittest.TestCase):
 
     def test_windows_exe_packaging_is_reproducible_without_committing_artifacts(self):
         build_script = ROOT / "packaging" / "build_windows_exe.ps1"
+        installer_script = ROOT / "packaging" / "xdownloader.iss"
         workflow = ROOT / ".github" / "workflows" / "build-windows-exe.yml"
         gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
 
         self.assertTrue(build_script.exists())
         self.assertIn("pyinstaller", build_script.read_text(encoding="utf-8").lower())
+        self.assertTrue(installer_script.exists())
+        installer_text = installer_script.read_text(encoding="utf-8")
+        self.assertIn("UninstallDisplayName", installer_text)
+        self.assertIn("DefaultDirName", installer_text)
+        self.assertIn("config.example.json", installer_text)
         self.assertTrue(workflow.exists())
         self.assertIn("softprops/action-gh-release", workflow.read_text(encoding="utf-8"))
+        self.assertIn("iscc", workflow.read_text(encoding="utf-8").lower())
         for ignored in ["build/", "dist/", "release/", "*.spec"]:
             self.assertIn(ignored, gitignore)
+
+    def test_readme_has_preview_and_bilingual_commit_policy(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("docs/assets/preview.svg", readme)
+        self.assertIn("Bilingual commits", readme)
+        self.assertIn("双语提交", readme)
+        self.assertTrue((ROOT / "docs" / "assets" / "preview.svg").exists())
 
 
 if __name__ == "__main__":

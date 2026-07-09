@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="xDownloader interface preview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#16151f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#50d5a8"/>
+      <stop offset="1" stop-color="#6c5ce7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="36" y="34" width="1208" height="652" rx="18" fill="#11131b" stroke="#2d3142"/>
+  <rect x="36" y="34" width="82" height="652" rx="18" fill="#0d0f16"/>
+  <text x="62" y="84" fill="#ffffff" font-family="Segoe UI, Arial" font-size="16" font-weight="700">xD</text>
+  <g fill="#8e95a7" font-family="Segoe UI, Arial" font-size="13" font-weight="700">
+    <text x="55" y="145">Home</text>
+    <text x="50" y="196">Browse</text>
+    <text x="45" y="247">Timeline</text>
+    <text x="53" y="298">Media</text>
+    <text x="45" y="349">Download</text>
+    <text x="45" y="632">EN/中</text>
+  </g>
+  <rect x="118" y="34" width="1126" height="58" fill="#151823"/>
+  <rect x="148" y="51" width="430" height="28" rx="14" fill="#202432" stroke="#32384c"/>
+  <text x="168" y="70" fill="#9aa3b8" font-family="Segoe UI, Arial" font-size="13">Search users, tweets, or media...</text>
+  <rect x="1038" y="50" width="152" height="30" rx="15" fill="#17251f" stroke="#2f7d5e"/>
+  <text x="1060" y="70" fill="#50d5a8" font-family="Segoe UI, Arial" font-size="13" font-weight="700">Config ready</text>
+
+  <rect x="146" y="118" width="250" height="526" rx="12" fill="#151823" stroke="#2d3142"/>
+  <text x="168" y="151" fill="#ffffff" font-family="Segoe UI, Arial" font-size="20" font-weight="800">Local library</text>
+  <text x="168" y="178" fill="#9aa3b8" font-family="Segoe UI, Arial" font-size="13">Downloaded profiles and media</text>
+  <g>
+    <circle cx="178" cy="224" r="20" fill="url(#accent)"/>
+    <text x="171" y="230" fill="#fff" font-family="Segoe UI, Arial" font-size="15" font-weight="800">E</text>
+    <text x="210" y="219" fill="#f2f4f8" font-family="Segoe UI, Arial" font-size="14" font-weight="700">Elon Musk</text>
+    <text x="210" y="238" fill="#8e95a7" font-family="Segoe UI, Arial" font-size="12">@elonmusk · 324 media</text>
+  </g>
+  <g>
+    <circle cx="178" cy="286" r="20" fill="#f0b35a"/>
+    <text x="171" y="292" fill="#fff" font-family="Segoe UI, Arial" font-size="15" font-weight="800">T</text>
+    <text x="210" y="281" fill="#f2f4f8" font-family="Segoe UI, Arial" font-size="14" font-weight="700">Donald J. Trump</text>
+    <text x="210" y="300" fill="#8e95a7" font-family="Segoe UI, Arial" font-size="12">@realDonaldTrump · 128 media</text>
+  </g>
+  <rect x="168" y="352" width="196" height="76" rx="10" fill="#1c2130"/>
+  <text x="188" y="382" fill="#9aa3b8" font-family="Segoe UI, Arial" font-size="12">Total media</text>
+  <text x="188" y="410" fill="#ffffff" font-family="Segoe UI, Arial" font-size="28" font-weight="800">452</text>
+
+  <rect x="428" y="118" width="480" height="526" rx="12" fill="#151823" stroke="#2d3142"/>
+  <text x="456" y="152" fill="#ffffff" font-family="Segoe UI, Arial" font-size="20" font-weight="800">Timeline</text>
+  <g>
+    <circle cx="466" cy="207" r="23" fill="url(#accent)"/>
+    <text x="496" y="200" fill="#ffffff" font-family="Segoe UI, Arial" font-size="15" font-weight="800">Elon Musk</text>
+    <text x="496" y="220" fill="#8e95a7" font-family="Segoe UI, Arial" font-size="12">@elonmusk · local archive</text>
+    <text x="456" y="260" fill="#d8dce8" font-family="Segoe UI, Arial" font-size="14">Saved media appears inline, sorted by local tweet time.</text>
+    <rect x="456" y="282" width="192" height="128" rx="10" fill="#27354d"/>
+    <rect x="660" y="282" width="192" height="128" rx="10" fill="#2d4b3f"/>
+  </g>
+  <line x1="456" y1="446" x2="880" y2="446" stroke="#2d3142"/>
+  <g>
+    <circle cx="466" cy="498" r="23" fill="#f0b35a"/>
+    <text x="496" y="491" fill="#ffffff" font-family="Segoe UI, Arial" font-size="15" font-weight="800">Donald J. Trump</text>
+    <text x="496" y="511" fill="#8e95a7" font-family="Segoe UI, Arial" font-size="12">@realDonaldTrump · local archive</text>
+    <text x="456" y="551" fill="#d8dce8" font-family="Segoe UI, Arial" font-size="14">Browse downloaded posts without opening original links.</text>
+    <rect x="456" y="572" width="396" height="42" rx="10" fill="#202432"/>
+  </g>
+
+  <rect x="940" y="118" width="250" height="526" rx="12" fill="#151823" stroke="#2d3142"/>
+  <text x="964" y="152" fill="#ffffff" font-family="Segoe UI, Arial" font-size="20" font-weight="800">Settings</text>
+  <text x="964" y="180" fill="#9aa3b8" font-family="Segoe UI, Arial" font-size="13">Apply changes without restart</text>
+  <g font-family="Segoe UI, Arial" font-size="12" fill="#9aa3b8">
+    <text x="964" y="228">Download range</text>
+    <rect x="964" y="240" width="88" height="30" rx="7" fill="#202432" stroke="#32384c"/>
+    <rect x="1064" y="240" width="88" height="30" rx="7" fill="#202432" stroke="#32384c"/>
+    <text x="978" y="260" fill="#d8dce8">2020-01-01</text>
+    <text x="1078" y="260" fill="#d8dce8">2026-12-31</text>
+    <text x="964" y="315">List ID</text>
+    <rect x="964" y="328" width="188" height="30" rx="7" fill="#202432" stroke="#32384c"/>
+    <text x="978" y="348" fill="#d8dce8">1234567890</text>
+    <text x="964" y="398">Installer build</text>
+    <rect x="964" y="414" width="188" height="42" rx="10" fill="#1d2d27" stroke="#2f7d5e"/>
+    <text x="988" y="441" fill="#50d5a8" font-size="14" font-weight="800">Setup + Uninstall</text>
+  </g>
+</svg>

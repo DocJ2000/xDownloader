@@ -1,5 +1,6 @@
 param(
-    [string]$Version = "dev"
+    [string]$Version = "dev",
+    [switch]$SkipInstaller
 )
 
 $ErrorActionPreference = "Stop"
@@ -50,3 +51,31 @@ $zipName = "xDownloader-$Version-windows.zip"
 Compress-Archive -Path "release/xDownloader.exe" -DestinationPath "release/$zipName" -Force
 Write-Host "Built release/xDownloader.exe"
 Write-Host "Built release/$zipName"
+
+if (-not $SkipInstaller) {
+    $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+    if (-not $iscc) {
+        $candidates = @(
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+            "${env:ProgramFiles}\Inno Setup 6\ISCC.exe",
+            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+        )
+        foreach ($candidate in $candidates) {
+            if (Test-Path $candidate) {
+                $iscc = Get-Item $candidate
+                break
+            }
+        }
+    }
+    if (-not $iscc) {
+        throw "Inno Setup compiler not found. Install Inno Setup 6 or run with -SkipInstaller."
+    }
+
+    $isccPath = if ($iscc.Source) { $iscc.Source } else { $iscc.FullName }
+    $env:XDOWNLOADER_VERSION = $Version
+    & $isccPath "packaging\xdownloader.iss"
+    if (-not (Test-Path "release/xDownloader-Setup-$Version.exe")) {
+        throw "Inno Setup did not create release/xDownloader-Setup-$Version.exe"
+    }
+    Write-Host "Built release/xDownloader-Setup-$Version.exe"
+}
