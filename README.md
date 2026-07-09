@@ -2,28 +2,38 @@
 
 ![xDownloader preview](docs/assets/preview.svg)
 
+## Download
+
+For most Windows users, download the installer from the latest GitHub Release:
+
+[Download xDownloader Setup](https://github.com/DocJ2000/xDownloader/releases/latest)
+
+- Choose `xDownloader-Setup-*.exe` for the guided installer.
+- Choose `xDownloader-*-windows.zip` if you prefer a portable executable.
+- Choose GitHub's automatically generated source code archive if you want to build or modify the project.
+
 ## English
 
-xDownloader is a local X/Twitter media downloader and browser. It downloads media and text tweets for configured users, can sync users from an X list, and provides a local browser-based UI for browsing users, timeline items, and media.
+xDownloader is a local X/Twitter media downloader and browser. It downloads media and text tweets for configured users, can sync users from an X list, and provides a browser-based local UI for browsing users, timeline items, and media.
 
-### Download the Windows installer
+### Windows Installer
 
-For the easiest setup, download `xDownloader-Setup-*.exe` from GitHub Releases and run it.
+The recommended installer is `xDownloader-Setup-*.exe` from GitHub Releases.
 
-- The installer lets you choose the install folder.
+- The installer lets users choose the install folder.
+- `config.json` is created in the install folder on first run.
 - Windows gets a normal uninstall entry, plus an uninstaller in the install folder.
 - No Python installation is required for the installer build.
-- On first run, the app creates `config.json` in the install folder if it does not already exist.
-- The Settings tab lets you edit personal configuration and click `Apply` to use it immediately.
+- The Settings tab lets users edit personal configuration and click `Apply` to use it immediately.
 
-### Feature preview
+### Feature Preview
 
 - Browse downloaded media locally without opening original tweet links.
 - Timeline view shows local archived posts by time.
 - Settings cover account credentials, save path, date range, list sync, tag search, text download, retry, logging, and theme.
 - Example preview data uses public-person demo names such as Elon Musk and Donald J. Trump only as mock UI content.
 
-### List sync tips
+### List Sync Tips
 
 List ID is preferred. Open a list page on X in your browser and copy the numeric ID from a URL like:
 
@@ -33,7 +43,7 @@ https://x.com/i/lists/1234567890
 
 If you do not have the numeric ID, use List Owner plus List Slug. The owner is the account screen name, and the slug is the list name in the URL.
 
-### Run from source
+### Run From Source
 
 ```bash
 pip install -r requirements.txt
@@ -47,7 +57,7 @@ Open the local UI if it does not open automatically:
 http://127.0.0.1:8765/
 ```
 
-### Project layout
+### Project Layout
 
 - `xdownloader.py` and `Start xDownloader.bat` are source launchers.
 - `config.example.json` is the template for private `config.json`.
@@ -55,7 +65,7 @@ http://127.0.0.1:8765/
 - `packaging/` contains Windows installer and exe build scripts.
 - `tests/` contains regression tests.
 
-### Build locally
+### Build Locally
 
 Build the portable exe and installer:
 
@@ -89,38 +99,48 @@ python -m compileall -q xdownloader.py xdownloader_app
 
 ### Contributing
 
-Contributions are welcome. Please read `CONTRIBUTING.md`, open an issue for larger changes, and include tests for behavior changes. Do not commit generated build artifacts, caches, local test output, downloaded media, or personal config files.
+Contributions are welcome. Please open issues for bugs or product ideas, and use pull requests for code changes.
+
+## 下载
+
+大多数 Windows 用户建议直接从最新 GitHub Release 下载安装包：
+
+[下载 xDownloader 安装包](https://github.com/DocJ2000/xDownloader/releases/latest)
+
+- 普通用户请选择 `xDownloader-Setup-*.exe`，这是带安装向导的版本。
+- 想免安装运行的用户请选择 `xDownloader-*-windows.zip`。
+- 想阅读、修改或自行构建项目的开发者，可以下载 GitHub 自动生成的源码包。
 
 ## 中文
 
-xDownloader 是一个本地 X/Twitter 媒体下载器和浏览器。它可以按用户下载媒体和文字推文，可以从 X 列表同步用户，并提供基于浏览器的本地界面来浏览用户、时间线内容和媒体库。
+xDownloader 是一个本地 X/Twitter 媒体下载器和浏览器。它可以按用户下载媒体和文本推文，可以从 X 列表同步用户，并提供浏览器形式的本地界面，用来查看用户、时间线内容和媒体库。
 
-### 下载 Windows 安装包
+### Windows 安装包
 
-最简单的使用方式是从 GitHub Releases 下载 `xDownloader-Setup-*.exe` 并运行。
+推荐普通用户下载 GitHub Releases 里的 `xDownloader-Setup-*.exe`。
 
 - 安装过程可以选择安装路径。
-- Windows 会获得标准卸载入口，安装目录里也会有卸载程序。
-- 安装包版本不需要用户安装 Python。
-- 第一次运行时，如果安装目录没有 `config.json`，软件会自动创建。
-- 个人配置都可以在“设置”页修改，点击“应用”后立即生效。
+- 首次运行时会在安装目录生成 `config.json`。
+- Windows 会出现标准卸载入口，安装目录里也会有卸载程序。
+- 安装包版本不需要用户自己安装 Python。
+- 设置页可以填写个人配置，并点击 `Apply` 立即应用。
 
 ### 功能预览
 
-- 在本地浏览已下载媒体，不会跳到原推文链接。
-- 时间线页面按本地归档时间展示推文内容。
-- 设置页覆盖账号凭证、保存路径、日期范围、列表同步、标签搜索、文本下载、重试、日志和主题。
-- 预览图里使用 Elon Musk 和 Donald J. Trump 等公众人物名称作为模拟界面内容，不包含真实账号凭证或真实推文数据。
+- 在本地浏览已下载媒体，不会跳转到原推文链接。
+- 时间线页面按时间显示本地归档内容。
+- 设置页覆盖账号凭据、保存路径、日期范围、列表同步、标签搜索、文本下载、重试、日志和主题。
+- 预览图只使用 Elon Musk、Donald J. Trump 等公开人物名称作为演示数据，不包含私人信息。
 
 ### 列表同步提示
 
-推荐优先使用 List ID。在浏览器里打开 X 列表页面，从类似下面的地址复制数字 ID：
+优先使用 List ID。在浏览器打开 X 列表页，从下面这种地址里复制数字 ID：
 
 ```text
 https://x.com/i/lists/1234567890
 ```
 
-如果没有数字 ID，也可以填写 List Owner 和 List Slug。Owner 是账号用户名，Slug 是列表 URL 里的列表名称。
+如果没有数字 ID，也可以填写 List Owner 和 List Slug。Owner 是账号名，Slug 是列表网址里的列表短名。
 
 ### 从源码运行
 
@@ -130,7 +150,7 @@ copy config.example.json config.json
 python xdownloader.py
 ```
 
-如果浏览器没有自动打开，访问：
+如果界面没有自动打开，可以手动访问：
 
 ```text
 http://127.0.0.1:8765/
@@ -138,8 +158,8 @@ http://127.0.0.1:8765/
 
 ### 项目结构
 
-- `xdownloader.py` 和 `Start xDownloader.bat` 是源码运行入口。
-- `config.example.json` 是私人配置 `config.json` 的模板。
+- `xdownloader.py` 和 `Start xDownloader.bat` 是源码启动入口。
+- `config.example.json` 是私人配置文件 `config.json` 的模板。
 - `xdownloader_app/` 存放运行代码和网页界面。
 - `packaging/` 存放 Windows 安装包和 exe 构建脚本。
 - `tests/` 存放回归测试。
@@ -158,11 +178,11 @@ http://127.0.0.1:8765/
 ./packaging/build_windows_exe.ps1 -Version local -SkipInstaller
 ```
 
-生成文件会放到 `release/`，该目录已被 Git 忽略。
+生成文件会写入 `release/`，该目录不会提交到 Git。
 
 ### 双语提交
 
-提交信息应使用中英双语，方便中英文读者理解历史：
+提交信息请使用中英双语，方便中英文读者理解历史：
 
 ```text
 Add installer packaging / 添加安装包构建
@@ -178,4 +198,4 @@ python -m compileall -q xdownloader.py xdownloader_app
 
 ### 参与贡献
 
-欢迎贡献。请先阅读 `CONTRIBUTING.md`；较大的改动建议先开 issue 讨论；涉及行为变化的 PR 请附带测试。不要提交构建产物、缓存、本地测试输出、下载媒体或私人配置文件。
+欢迎贡献。Bug 和产品建议可以开 issue，代码改动请使用 pull request。
