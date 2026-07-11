@@ -9,10 +9,13 @@ Set-Location $root
 $rootPath = $root.Path
 $indexPath = Join-Path $rootPath "xdownloader_app/index.html"
 $configExamplePath = Join-Path $rootPath "config.example.json"
+$versionFilePath = Join-Path $rootPath "xdownloader_app/_version.py"
 
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install pyinstaller
+
+Set-Content -LiteralPath $versionFilePath -Value "VERSION = `"$Version`"" -Encoding UTF8
 
 Remove-Item -Recurse -Force build, dist, release -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force release | Out-Null

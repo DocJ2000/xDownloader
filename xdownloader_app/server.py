@@ -3,9 +3,13 @@ import os
 import re
 import csv
 import shutil
+import subprocess
 import threading
 import time
 import sys
+import urllib.error
+import urllib.parse
+import urllib.request
 from io import StringIO
 
 from flask import Flask, jsonify, request, send_file, Response
@@ -19,6 +23,13 @@ BUNDLED_CONFIG_EXAMPLE = os.path.join(getattr(sys, '_MEIPASS', PROJECT_ROOT), 'c
 DOWNLOAD_ROOT = os.path.join(PROJECT_ROOT, 'downloads')
 PORT = 8765
 CURRENT_CONFIG_VERSION = 3
+try:
+    from ._version import VERSION as BUNDLED_APP_VERSION
+except Exception:
+    BUNDLED_APP_VERSION = "v0.3.1"
+APP_VERSION = os.environ.get("XDOWNLOADER_VERSION", BUNDLED_APP_VERSION)
+GITHUB_RELEASES_API = "https://api.github.com/repos/DocJ2000/xDownloader/releases/latest"
+GITHUB_RELEASES_LATEST_URL = "https://github.com/DocJ2000/xDownloader/releases/latest"
 
 _BASE_DIR = ASSET_ROOT
 
@@ -35,6 +46,10 @@ download_state = {
     "running": False,
     "paused": False,
     "terminated": False,
+    "failed": False,
+    "auto_shutdown": False,
+    "shutdown_scheduled": False,
+    "history_recorded": False,
     "state": "idle",
     "logs": [],
     "current": 0,
@@ -43,8 +58,128 @@ download_state = {
 }
 
 
+def schedule_system_shutdown(delay_seconds=60):
+    if os.name == 'nt':
+        subprocess.Popen(['shutdown', '/s', '/t', str(int(delay_seconds))])
+    else:
+        subprocess.Popen(['shutdown', '-h', f'+{max(1, int(delay_seconds // 60))}'])
+
+
+def finalize_download_state():
+    global download_state
+    download_state['running'] = False
+    if download_state.get('terminated'):
+        download_state['state'] = 'terminated'
+    elif download_state.get('paused'):
+        download_state['state'] = 'paused'
+    elif download_state.get('failed'):
+        download_state['state'] = 'failed'
+    else:
+        download_state['state'] = 'complete'
+        if download_state.get('stats') and not download_state.get('history_recorded'):
+            record_download_history(
+                download_state.get('stats') or {},
+                download_state.get('requested_users') or [],
+                download_state.get('storage_before', 0),
+                download_state.get('storage_after', download_state.get('storage_before', 0)),
+                started_at=download_state.get('started_at'),
+                finished_at=time.time(),
+            )
+            download_state['history_recorded'] = True
+        if download_state.get('auto_shutdown') and not download_state.get('shutdown_scheduled'):
+            schedule_system_shutdown()
+            download_state['shutdown_scheduled'] = True
+
+
 def download_progress_path():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'download_progress.json')
+
+
+def download_history_path():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'download_history.json')
+
+
+def directory_size_bytes(path):
+    total = 0
+    if not path or not os.path.isdir(path):
+        return 0
+    for current_root, _, filenames in os.walk(path):
+        for filename in filenames:
+            full_path = os.path.join(current_root, filename)
+            try:
+                total += os.path.getsize(full_path)
+            except OSError:
+                continue
+    return total
+
+
+def load_download_history():
+    path = download_history_path()
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return []
+    if isinstance(data, dict):
+        data = data.get('items', [])
+    if not isinstance(data, list):
+        return []
+    return [item for item in data if isinstance(item, dict)][-3:]
+
+
+def save_download_history(items):
+    path = download_history_path()
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(items[-3:], f, ensure_ascii=False, indent=2)
+
+
+def format_duration(seconds):
+    try:
+        seconds = max(0, int(seconds or 0))
+    except (TypeError, ValueError):
+        seconds = 0
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours:
+        return f'{hours}h {minutes}m {seconds}s'
+    if minutes:
+        return f'{minutes}m {seconds}s'
+    return f'{seconds}s'
+
+
+def record_download_history(
+    stats,
+    requested_users=None,
+    storage_before=0,
+    storage_after=0,
+    started_at=None,
+    finished_at=None,
+):
+    stats = stats or {}
+    finished_at = time.time() if finished_at is None else finished_at
+    started_at = finished_at if started_at is None else started_at
+    duration_seconds = max(0, int(finished_at - started_at))
+    new_media = int(stats.get('images') or 0) + int(stats.get('videos') or 0)
+    new_tweets = int(stats.get('text_tweets') or 0)
+    new_bytes = max(0, int(storage_after or 0) - int(storage_before or 0))
+    entry = {
+        'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(finished_at)),
+        'duration_seconds': duration_seconds,
+        'duration': format_duration(duration_seconds),
+        'users': int(stats.get('users') or 0),
+        'requested_users': len(requested_users or []),
+        'new_media': new_media,
+        'new_tweets': new_tweets,
+        'new_bytes': new_bytes,
+        'new_size': _format_bytes(new_bytes),
+    }
+    history = load_download_history()
+    history.append(entry)
+    save_download_history(history)
+    return entry
 
 
 def get_download_root(config_data=None):
@@ -377,6 +512,42 @@ def _entry_matches_media_filter(entry, media_filter):
     return True
 
 
+MEDIA_LIBRARY_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm'}
+_MEDIA_LIBRARY_CACHE = {}
+
+
+def _is_video_media(local_file='', media_type=''):
+    return str(local_file or '').lower().endswith(('.mp4', '.webm')) or 'video' in str(media_type or '').lower()
+
+
+def _media_type_from_filename(filename):
+    return 'Video' if _is_video_media(filename, '') else 'Image'
+
+
+def _media_item_matches_filter(item, requested):
+    requested = (requested or 'all').lower()
+    is_video_media = _is_video_media(item.get('local_file', ''), item.get('media_type', ''))
+    if requested == 'image' and is_video_media:
+        return False
+    if requested == 'video' and not is_video_media:
+        return False
+    return True
+
+
+def _media_item_matches_query(item, query):
+    query = (query or '').strip().lower()
+    if not query:
+        return True
+    haystack = ' '.join([
+        item.get('content', ''),
+        item.get('display_name', ''),
+        item.get('username', ''),
+        item.get('folder', ''),
+        item.get('local_file', ''),
+    ]).lower()
+    return query in haystack
+
+
 def build_timeline_response(download_root, page=1, per_page=30, query='', media_filter='all'):
     try:
         page = max(1, int(page))
@@ -426,35 +597,93 @@ def build_timeline_response(download_root, page=1, per_page=30, query='', media_
     }
 
 
-def build_media_library_response(download_root, page=1, per_page=60, query='', media_filter='all'):
-    timeline = build_timeline_response(
-        download_root,
-        page=1,
-        per_page=1000000,
-        query=query,
-        media_filter='media' if media_filter in ('all', 'any', '') else media_filter,
-    )
+def _scan_media_library(download_root):
+    by_key = {}
+
+    if not os.path.isdir(download_root):
+        return []
+
+    for folder in os.listdir(download_root):
+        folder_path = os.path.join(download_root, folder)
+        if not os.path.isdir(folder_path) or '@' not in folder:
+            continue
+        screen_name = folder.rsplit('@', 1)[1]
+        metadata = {}
+        for row in parse_media_csv(os.path.join(folder_path, f'{screen_name}.csv')):
+            local_file = row.get('local_file', '').replace('\\', '/').strip()
+            if not local_file:
+                continue
+            if local_file.lower() in ('saved filename', 'filename'):
+                continue
+            key = (folder, local_file.lower())
+            metadata[key] = row
+            item = {
+                'time': row.get('time', ''),
+                'display_name': row.get('display_name', ''),
+                'username': row.get('username', screen_name),
+                'content': row.get('content', ''),
+                'folder': folder,
+                'tweet_url': row.get('url', ''),
+                'media_type': row.get('media_type', '') or _media_type_from_filename(local_file),
+                'local_file': local_file,
+                'media_path': f'/media/{folder}/{local_file}',
+                'source': 'csv',
+            }
+            by_key.setdefault(key, item)
+
+        for current_root, _, filenames in os.walk(folder_path):
+            for filename in filenames:
+                ext = os.path.splitext(filename)[1].lower()
+                if ext not in MEDIA_LIBRARY_EXTENSIONS:
+                    continue
+                full_path = os.path.join(current_root, filename)
+                rel_path = os.path.relpath(full_path, folder_path).replace('\\', '/')
+                key = (folder, rel_path.lower())
+                row = metadata.get(key, {})
+                item = by_key.get(key, {})
+                if not item:
+                    item = {
+                        'time': row.get('time', ''),
+                        'display_name': row.get('display_name', ''),
+                        'username': row.get('username', screen_name),
+                        'content': row.get('content', ''),
+                        'folder': folder,
+                        'tweet_url': row.get('url', ''),
+                        'media_type': row.get('media_type', '') or _media_type_from_filename(rel_path),
+                        'local_file': rel_path,
+                        'media_path': f'/media/{folder}/{rel_path}',
+                        'source': 'local',
+                    }
+                    by_key[key] = item
+                elif item.get('source') == 'csv':
+                    item['source'] = 'csv+local'
+                try:
+                    item['modified'] = os.path.getmtime(full_path)
+                except OSError:
+                    item['modified'] = 0
+
+    return list(by_key.values())
+
+
+def build_media_library_response(download_root, page=1, per_page=60, query='', media_filter='all', force_refresh=False):
     items = []
     requested = (media_filter or 'all').lower()
-    for entry in timeline['items']:
-        for media in entry.get('media_items') or []:
-            local_file = media.get('local_file', '')
-            is_video_media = local_file.lower().endswith(('.mp4', '.webm')) or 'video' in media.get('media_type', '').lower()
-            if requested == 'image' and is_video_media:
-                continue
-            if requested == 'video' and not is_video_media:
-                continue
-            items.append({
-                'time': entry.get('time', ''),
-                'display_name': entry.get('display_name', ''),
-                'username': entry.get('username', ''),
-                'content': entry.get('content', ''),
-                'folder': entry.get('folder', ''),
-                'tweet_url': entry.get('url', ''),
-                'media_type': media.get('media_type', ''),
-                'local_file': local_file,
-                'media_path': media.get('media_path', ''),
-            })
+    cache_key = os.path.realpath(download_root)
+    if force_refresh or cache_key not in _MEDIA_LIBRARY_CACHE:
+        _MEDIA_LIBRARY_CACHE[cache_key] = {
+            'items': _scan_media_library(download_root),
+            'scanned_at': time.time(),
+        }
+    all_items = _MEDIA_LIBRARY_CACHE[cache_key]['items']
+
+    for item in all_items:
+        if not _media_item_matches_filter(item, requested):
+            continue
+        if not _media_item_matches_query(item, query):
+            continue
+        items.append(item)
+
+    items.sort(key=lambda x: (x.get('time') or '', x.get('modified') or 0, x.get('folder') or '', x.get('local_file') or ''), reverse=True)
 
     try:
         page = max(1, int(page))
@@ -478,6 +707,9 @@ def build_media_library_response(download_root, page=1, per_page=60, query='', m
         'total_pages': total_pages,
         'query': query or '',
         'media_filter': media_filter,
+        'indexed': sum(1 for item in items if 'csv' in item.get('source', '')),
+        'local': sum(1 for item in items if 'local' in item.get('source', '')),
+        'orphan': sum(1 for item in items if item.get('source') == 'local'),
     }
 
 
@@ -877,6 +1109,138 @@ def deep_set(d, key_path, value):
     d[keys[-1]] = value
 
 
+def normalize_version(value):
+    value = str(value or "").strip()
+    if value.lower().startswith("version "):
+        value = value[8:].strip()
+    return value[1:] if value.lower().startswith("v") else value
+
+
+def version_parts(value):
+    parts = []
+    for item in re.split(r"[^0-9]+", normalize_version(value)):
+        if item:
+            parts.append(int(item))
+    return parts or [0]
+
+
+def is_newer_version(candidate, current):
+    left = version_parts(candidate)
+    right = version_parts(current)
+    size = max(len(left), len(right))
+    left += [0] * (size - len(left))
+    right += [0] * (size - len(right))
+    return left > right
+
+
+def fetch_latest_github_release():
+    req = urllib.request.Request(
+        GITHUB_RELEASES_API,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "xDownloader-update-checker",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        if e.code not in (403, 429):
+            raise
+        return fetch_latest_github_release_from_page()
+
+
+def fetch_latest_github_release_from_page():
+    req = urllib.request.Request(
+        GITHUB_RELEASES_LATEST_URL,
+        headers={"User-Agent": "xDownloader-update-checker"},
+    )
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        final_url = resp.geturl()
+        page = resp.read(300000).decode("utf-8", "ignore")
+    tag = final_url.rstrip("/").rsplit("/", 1)[-1]
+    if not tag or tag == "latest":
+        match = re.search(r"/DocJ2000/xDownloader/releases/tag/([^\"'<>\s]+)", page)
+        tag = match.group(1) if match else ""
+    installer_name = f"xDownloader-Setup-{tag}.exe" if tag else ""
+    asset_url = f"https://github.com/DocJ2000/xDownloader/releases/download/{tag}/{installer_name}" if tag else ""
+    return {
+        "tag_name": tag,
+        "html_url": final_url,
+        "body": "",
+        "assets": [
+            {
+                "name": installer_name,
+                "browser_download_url": asset_url,
+                "size": 0,
+            }
+        ] if tag else [],
+    }
+
+
+def find_installer_asset(release):
+    for asset in (release or {}).get("assets") or []:
+        name = asset.get("name") or ""
+        if re.match(r"^xDownloader-Setup-.+\.exe$", name, re.IGNORECASE):
+            return asset
+    return None
+
+
+def get_runtime_mode():
+    return "packaged" if IS_FROZEN else "source"
+
+
+def build_update_status(release, current_version=None, runtime_mode=None):
+    current_version = current_version or APP_VERSION
+    runtime_mode = runtime_mode or get_runtime_mode()
+    latest_version = (release or {}).get("tag_name") or (release or {}).get("name") or ""
+    asset = find_installer_asset(release)
+    update_available = bool(latest_version and is_newer_version(latest_version, current_version))
+    can_install_update = runtime_mode == "packaged" and asset is not None
+    return {
+        "ok": True,
+        "current_version": current_version,
+        "latest_version": latest_version,
+        "update_available": update_available,
+        "runtime_mode": runtime_mode,
+        "can_install_update": can_install_update,
+        "release_url": (release or {}).get("html_url") or "",
+        "notes": (release or {}).get("body") or "",
+        "installer_name": (asset or {}).get("name") or "",
+        "installer_size": (asset or {}).get("size") or 0,
+        "download_url": (asset or {}).get("browser_download_url") or "",
+        "installer_available": asset is not None,
+    }
+
+
+def is_valid_installer_name(name):
+    return bool(re.match(r"^xDownloader-Setup-.+\.exe$", os.path.basename(name or ""), re.IGNORECASE))
+
+
+def is_valid_update_url(url):
+    parsed = urllib.parse.urlparse(url or "")
+    return parsed.scheme in ("http", "https") and parsed.netloc and parsed.path.lower().endswith(".exe")
+
+
+def download_update_asset(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "xDownloader-update-downloader"})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        while True:
+            chunk = resp.read(1024 * 128)
+            if not chunk:
+                break
+            yield chunk
+
+
+def updates_dir():
+    return os.path.join(PROJECT_ROOT, "updates")
+
+
+def update_file_path(installer_name):
+    safe_name = os.path.basename(installer_name or "")
+    return os.path.join(updates_dir(), safe_name)
+
+
 @app.route('/api/users')
 def api_users():
     return jsonify(get_user_folders())
@@ -917,6 +1281,62 @@ def api_config_status():
     return jsonify(build_config_status(load_config_data()))
 
 
+@app.route('/api/update/check')
+def api_update_check():
+    try:
+        release = fetch_latest_github_release()
+        return jsonify(build_update_status(release))
+    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as e:
+        return jsonify({'ok': False, 'error': str(e)}), 502
+
+
+@app.route('/api/update/download', methods=['POST'])
+def api_update_download():
+    body = request.get_json(silent=True) or {}
+    download_url = (body.get('download_url') or '').strip()
+    installer_name = (body.get('installer_name') or '').strip()
+    if not is_valid_installer_name(installer_name):
+        return jsonify({'ok': False, 'error': 'invalid installer name'}), 400
+    if not is_valid_update_url(download_url):
+        return jsonify({'ok': False, 'error': 'invalid download url'}), 400
+
+    target_dir = updates_dir()
+    target_path = update_file_path(installer_name)
+    tmp_path = target_path + '.tmp'
+    try:
+        os.makedirs(target_dir, exist_ok=True)
+        with open(tmp_path, 'wb') as f:
+            for chunk in download_update_asset(download_url):
+                f.write(chunk)
+        os.replace(tmp_path, target_path)
+        return jsonify({'ok': True, 'file_path': target_path, 'installer_name': installer_name})
+    except (urllib.error.URLError, TimeoutError, OSError) as e:
+        try:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+        except OSError:
+            pass
+        return jsonify({'ok': False, 'error': str(e)}), 502
+
+
+@app.route('/api/update/open', methods=['POST'])
+def api_update_open():
+    body = request.get_json(silent=True) or {}
+    file_path = os.path.abspath(body.get('file_path') or '')
+    allowed_root = os.path.abspath(updates_dir())
+    if not file_path.startswith(allowed_root + os.sep) or not is_valid_installer_name(file_path):
+        return jsonify({'ok': False, 'error': 'invalid installer path'}), 400
+    if not os.path.isfile(file_path):
+        return jsonify({'ok': False, 'error': 'installer not found'}), 404
+    try:
+        if hasattr(os, 'startfile'):
+            os.startfile(file_path)
+            return jsonify({'ok': True})
+        return jsonify({'ok': False, 'error': 'open installer is only supported on Windows'}), 400
+    except OSError as e:
+        return jsonify({'ok': False, 'error': str(e)}), 502
+
+
 @app.route('/api/dialog/directory', methods=['POST'])
 def api_dialog_directory():
     payload = request.get_json(silent=True) or {}
@@ -954,6 +1374,7 @@ def api_media_library():
         per_page=request.args.get('per_page', 60),
         query=request.args.get('q', ''),
         media_filter=request.args.get('media', 'all'),
+        force_refresh=request.args.get('refresh') in ('1', 'true', 'yes'),
     ))
 
 
@@ -1056,11 +1477,22 @@ def api_download_start():
     users = body.get('users', [])
     if not users:
         return jsonify({'error': 'no users provided'}), 400
+    auto_shutdown = bool(body.get('auto_shutdown'))
+    started_at = time.time()
+    storage_before = directory_size_bytes(get_download_root())
 
     download_state = {
         'running': True,
         'paused': False,
         'terminated': False,
+        'failed': False,
+        'auto_shutdown': auto_shutdown,
+        'shutdown_scheduled': False,
+        'history_recorded': False,
+        'requested_users': list(users),
+        'started_at': started_at,
+        'storage_before': storage_before,
+        'storage_after': storage_before,
         'state': 'running',
         'logs': [],
         'current': 0,
@@ -1108,13 +1540,13 @@ def _run_download(users):
             }
             download_state['current'] = progress_total
             download_state['total'] = progress_total
+            download_state['storage_after'] = directory_size_bytes(get_download_root())
             download_state['logs'] = [
                 time.strftime('[%H:%M:%S] All users recently processed, nothing to do'),
                 time.strftime('[%H:%M:%S] Checkpoint will expire after 12h'),
                 time.strftime('[%H:%M:%S] Total: ' + str(progress_total) + ' users complete'),
             ]
-            download_state['running'] = False
-            download_state['state'] = 'complete'
+            finalize_download_state()
             return
     completed_lock = threading.Lock()
 
@@ -1502,21 +1934,50 @@ def _run_download(users):
             os.remove(progress_file)
 
     except Exception as e:
+        download_state['failed'] = True
         qlog.error(f"Download crashed: {e}")
     finally:
-        download_state['running'] = False
-        if download_state.get('terminated'):
-            download_state['state'] = 'terminated'
-        elif download_state.get('paused'):
-            download_state['state'] = 'paused'
-        else:
-            download_state['state'] = 'complete'
+        download_state['storage_after'] = directory_size_bytes(get_download_root())
+        finalize_download_state()
+        if download_state.get('shutdown_scheduled'):
+            qlog.info("Auto shutdown scheduled in 60 seconds")
         qlog.info("Download finished")
 
 
 @app.route('/api/download/status')
 def api_download_status():
-    return jsonify(download_state)
+    state = dict(download_state)
+    state['history'] = load_download_history()
+    return jsonify(state)
+
+
+def resolve_list_sync_request(body, config_data=None):
+    config_data = load_config_data() if config_data is None else config_data
+    list_sync = config_data.get('list_sync') or {}
+    raw_id = str(body.get('list_url') or body.get('list_id') or list_sync.get('list_url') or list_sync.get('list_id') or '').strip()
+    owner = str(body.get('list_owner') or list_sync.get('list_owner') or '').strip().replace('@', '')
+    slug = str(body.get('list_slug') or list_sync.get('list_slug') or '').strip()
+
+    url_match = re.search(r'/i/lists/(\d+)', raw_id)
+    if url_match:
+        raw_id = url_match.group(1)
+    elif raw_id.startswith('http') or '/' in raw_id:
+        cleaned = re.sub(r'^https?://(www\.)?(x|twitter)\.com/', '', raw_id).strip('/')
+        parts = [part for part in cleaned.split('/') if part]
+        if len(parts) >= 3 and parts[-2] == 'lists':
+            owner = owner or parts[-3].replace('@', '')
+            slug = slug or parts[-1]
+            raw_id = ''
+        elif len(parts) >= 2 and not raw_id.isdigit():
+            owner = owner or parts[-2].replace('@', '')
+            slug = slug or parts[-1]
+            raw_id = ''
+
+    return {
+        'list_id': raw_id,
+        'list_owner': owner,
+        'list_slug': slug,
+    }
 
 
 @app.route('/api/download/sync', methods=['POST'])
@@ -1525,9 +1986,9 @@ def api_download_sync():
     if sync_state['running']:
         return jsonify({'error': 'sync already running'}), 409
     body = request.get_json() or {}
-    list_id = (body.get('list_id') or load_config_data().get('list_sync', {}).get('list_id', ''))
-    if not list_id:
-        return jsonify({'error': 'no list_id configured'}), 400
+    list_ref = resolve_list_sync_request(body)
+    if not list_ref['list_id'] and not (list_ref['list_owner'] and list_ref['list_slug']):
+        return jsonify({'error': 'no list configured'}), 400
 
     sync_state = {
         'running': True,
@@ -1535,7 +1996,7 @@ def api_download_sync():
         'new_users': [],
         'total_members': 0,
     }
-    t = threading.Thread(target=_run_sync, args=(list_id,), daemon=True)
+    t = threading.Thread(target=_run_sync, args=(list_ref,), daemon=True)
     t.start()
     return jsonify({'ok': True})
 
@@ -1543,7 +2004,7 @@ def api_download_sync():
 sync_state = {'running': False, 'logs': [], 'new_users': [], 'total_members': 0}
 
 
-def _run_sync(list_id):
+def _run_sync(list_ref):
     global sync_state
     queue_log = []
 
@@ -1563,7 +2024,11 @@ def _run_sync(list_id):
 
     qlog = QLog()
     try:
-        qlog.info(f"SYNC started for list {list_id}")
+        list_id = list_ref.get('list_id', '')
+        list_owner = list_ref.get('list_owner', '')
+        list_slug = list_ref.get('list_slug', '')
+        label = list_id or f"@{list_owner}/{list_slug}"
+        qlog.info(f"SYNC started for list {label}")
 
         import sys
         sys.path.insert(0, APP_DIR)
@@ -1581,7 +2046,10 @@ def _run_sync(list_id):
         for attempt in range(5):
             qlog.info(f"SYNC: fetching list members (attempt {attempt + 1}/5)...")
             try:
-                members = api.fetch_list_members_by_id(list_id)
+                if list_id:
+                    members = api.fetch_list_members_by_id(list_id)
+                else:
+                    members = api.fetch_list_members(list_owner, list_slug)
                 break
             except RateLimitError:
                 if attempt < 4:
@@ -1591,7 +2059,7 @@ def _run_sync(list_id):
                 else:
                     qlog.warning("SYNC: rate limited after max retries")
             except ListNotFoundError:
-                qlog.warning(f"SYNC: list {list_id} not found or API changed")
+                qlog.warning(f"SYNC: list {label} not found or API changed")
                 break
             except TwitterAPIError as e:
                 if attempt < 4:

@@ -120,6 +120,58 @@ class TimelineApiTest(unittest.TestCase):
             self.assertEqual("two.jpg", response["items"][0]["local_file"])
             self.assertEqual("/media/Alice@alice/two.jpg", response["items"][0]["media_path"])
 
+    def test_media_library_scans_local_files_without_csv_rows(self):
+        with tempfile.TemporaryDirectory() as root:
+            user_dir = os.path.join(root, "Alice@alice")
+            os.makedirs(user_dir, exist_ok=True)
+            with open(os.path.join(user_dir, "orphan.jpg"), "wb") as f:
+                f.write(b"image-data")
+
+            response = build_media_library_response(root, page=1, per_page=20)
+
+            self.assertEqual(1, response["total"])
+            self.assertEqual("orphan.jpg", response["items"][0]["local_file"])
+            self.assertEqual("local", response["items"][0]["source"])
+
+    def test_media_library_is_not_limited_by_timeline_page_size(self):
+        with tempfile.TemporaryDirectory() as root:
+            rows = []
+            user_dir = os.path.join(root, "Alice@alice")
+            for i in range(130):
+                filename = f"media-{i:03d}.jpg"
+                rows.append([
+                    f"2025-01-{(i % 28) + 1:02d} 09:00", "Alice", "alice",
+                    f"https://x.com/alice/status/{i}", "Image",
+                    f"https://pbs.twimg.com/{i}.jpg", filename,
+                    f"image post {i}", "8", "1", "0",
+                ])
+                os.makedirs(user_dir, exist_ok=True)
+                with open(os.path.join(user_dir, filename), "wb") as f:
+                    f.write(b"image-data")
+            self._write_user_csv(root, "Alice@alice", "alice", rows)
+
+            response = build_media_library_response(root, page=1, per_page=200)
+
+            self.assertEqual(130, response["total"])
+            self.assertEqual(1, response["total_pages"])
+
+    def test_media_library_cache_refreshes_on_demand(self):
+        with tempfile.TemporaryDirectory() as root:
+            user_dir = os.path.join(root, "Alice@alice")
+            os.makedirs(user_dir, exist_ok=True)
+            with open(os.path.join(user_dir, "one.jpg"), "wb") as f:
+                f.write(b"one")
+
+            first = build_media_library_response(root, page=1, per_page=20, force_refresh=True)
+            with open(os.path.join(user_dir, "two.jpg"), "wb") as f:
+                f.write(b"two")
+            cached = build_media_library_response(root, page=1, per_page=20)
+            refreshed = build_media_library_response(root, page=1, per_page=20, force_refresh=True)
+
+            self.assertEqual(1, first["total"])
+            self.assertEqual(1, cached["total"])
+            self.assertEqual(2, refreshed["total"])
+
     def test_builds_dashboard_response_with_library_insights(self):
         with tempfile.TemporaryDirectory() as root:
             self._write_user_csv(root, "Alice@alice", "alice", [

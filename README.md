@@ -1,179 +1,93 @@
 # xDownloader
 
-A bilingual local X/Twitter media downloader and browser with a Windows installer, timeline, media library, and hot-applied settings.
+**A bilingual X/Twitter media downloader and local media browser for Windows.**  
+**一款中英双语的 X/Twitter 媒体下载器与本地媒体浏览器。**
 
-中英双语本地 X/Twitter 媒体下载与浏览器，支持 Windows 安装包、时间线、媒体库和前端即时配置。
+[![Latest Release](https://img.shields.io/github/v/release/DocJ2000/xDownloader?label=download)](https://github.com/DocJ2000/xDownloader/releases/latest)
+[![Windows](https://img.shields.io/badge/Windows-installer-blue)](https://github.com/DocJ2000/xDownloader/releases/latest)
+[![Bilingual UI](https://img.shields.io/badge/UI-English%20%2F%20%E4%B8%AD%E6%96%87-6c5ce7)](#interface-preview--界面预览)
+[![License](https://img.shields.io/github/license/DocJ2000/xDownloader)](LICENSE)
 
-## Download / 下载
+[Changelog / 更新日志](CHANGELOG.md)
 
-For most Windows users, download the installer from the latest GitHub Release.
+xDownloader helps you download X/Twitter media and browse your saved archive locally. It includes list sync, a timeline view, a media library, hot-applied settings, no-loss upgrades, and a guided Windows installer.
 
-大多数 Windows 用户建议直接从最新 GitHub Release 下载安装包。
-
-[Download xDownloader Setup / 下载 xDownloader 安装包](https://github.com/DocJ2000/xDownloader/releases/latest)
-
-- Choose `xDownloader-Setup-*.exe` for the guided installer.
-- Choose `xDownloader-*-windows.zip` if you prefer a portable executable.
-- Choose GitHub's automatically generated source code archive if you want to build or modify the project.
-- 普通用户请选择 `xDownloader-Setup-*.exe`，这是带安装向导的版本。
-- 想免安装运行的用户请选择 `xDownloader-*-windows.zip`。
-- 想阅读、修改或自行构建项目的开发者，可以下载 GitHub 自动生成的源码包。
-
-## Interface Preview / 界面预览
-
-xDownloader provides a full English and Chinese bilingual interface. The language can be switched inside the app.
-
-xDownloader 提供完整中英文双语界面，用户可以在软件内一键切换语言。
-
-### Home - English
-
-![xDownloader Home English](docs/assets/preview-home-en.png)
-
-### 首页 - 中文
-
-![xDownloader 中文首页](docs/assets/preview-home-zh.png)
-
-### Settings - English
-
-![xDownloader Settings English](docs/assets/preview-settings-en.png)
-
-### 设置 - 中文
-
-![xDownloader 中文设置](docs/assets/preview-settings-zh.png)
+xDownloader 可以帮助你下载 X/Twitter 媒体，并在本地浏览已保存的内容。它支持列表同步、时间线、媒体库、前端即时配置、无损升级，以及可选择安装路径的 Windows 安装包。
 
 ## English
 
-xDownloader is a local X/Twitter media downloader and browser. It downloads media and text tweets for configured users, can sync users from an X list, and provides a browser-based local UI for browsing users, timeline items, and media.
-
-### Windows Installer
-
-The recommended installer is `xDownloader-Setup-*.exe` from GitHub Releases.
-
-- The installer lets users choose the install folder.
-- `config.json` is created in the install folder on first run.
-- Windows gets a normal uninstall entry, plus an uninstaller in the install folder.
-- No Python installation is required for the installer build.
-- The Settings tab lets users edit personal configuration and click `Apply` to use it immediately.
-
-### No-loss upgrades
-
-For installer users, install the new `xDownloader-Setup-*.exe` over the existing installation folder. Existing `config.json` and download progress are preserved by default, and the app writes `config.json.bak` before saving or migrating configuration.
-
-For source or portable zip users, keep your existing `config.json` next to `xdownloader.py` or `xDownloader.exe`, then replace the application files. Missing new settings are added automatically the next time the app starts.
-
-### Feature Preview
-
-- Browse downloaded media locally without opening original tweet links.
-- Timeline view shows local archived posts by time.
-- Settings cover account credentials, save path, date range, list sync, tag search, text download, retry, logging, and theme.
-- Example preview data uses public-person demo names such as Elon Musk and Donald J. Trump only as mock UI content.
-
-### List Sync Tips
-
-List ID is preferred. Open a list page on X in your browser and copy the numeric ID from a URL like:
-
-```text
-https://x.com/i/lists/1234567890
-```
-
-If you do not have the numeric ID, use List Owner plus List Slug. The owner is the account screen name, and the slug is the list name in the URL.
-
-### Run From Source
-
-```bash
-pip install -r requirements.txt
-copy config.example.json config.json
-python xdownloader.py
-```
-
-Open the local UI if it does not open automatically:
-
-```text
-http://127.0.0.1:8765/
-```
-
-### Project Layout
-
-- `xdownloader.py` and `Start xDownloader.bat` are source launchers.
-- `config.example.json` is the template for private `config.json`.
-- `xdownloader_app/` contains the runtime code and web UI.
-- `packaging/` contains Windows installer and exe build scripts.
-- `tests/` contains regression tests.
-
-### Build Locally
-
-Build the portable exe and installer:
-
-```powershell
-./packaging/build_windows_exe.ps1 -Version local
-```
-
-Build only the portable exe:
-
-```powershell
-./packaging/build_windows_exe.ps1 -Version local -SkipInstaller
-```
-
-Generated files are written to `release/`, which is ignored by Git.
-
-### Bilingual commits
-
-Commit messages should be bilingual so both English and Chinese readers can follow history:
-
-```text
-Add installer packaging / 添加安装包构建
-Improve settings date picker / 优化设置页日期选择
-```
-
-### Tests
-
-```bash
-python -m unittest discover -s tests -v
-python -m compileall -q xdownloader.py xdownloader_app
-```
-
-### Contributing
-
-Contributions are welcome. Please open issues for bugs or product ideas, and use pull requests for code changes.
+For English readers: xDownloader is a local-first, bilingual interface tool for downloading and browsing X/Twitter media on Windows.
 
 ## 中文
 
-xDownloader 是一个本地 X/Twitter 媒体下载器和浏览器。它可以按用户下载媒体和文本推文，可以从 X 列表同步用户，并提供浏览器形式的本地界面，用来查看用户、时间线内容和媒体库。
+中文读者可以直接阅读每个章节里的中文说明。xDownloader 是一款本地优先、中英双语界面的 Windows X/Twitter 媒体下载与浏览工具。
 
-### Windows 安装包
+## Download / 下载
 
-推荐普通用户下载 GitHub Releases 里的 `xDownloader-Setup-*.exe`。
+For most users, download the installer from the latest GitHub Release:
 
-- 安装过程可以选择安装路径。
-- 首次运行时会在安装目录生成 `config.json`。
-- Windows 会出现标准卸载入口，安装目录里也会有卸载程序。
-- 安装包版本不需要用户自己安装 Python。
-- 设置页可以填写个人配置，并点击 `Apply` 立即应用。
+普通用户建议直接从最新版 GitHub Release 下载安装包：
 
-### 无损升级
+[**Download xDownloader Setup / 下载 xDownloader 安装包**](https://github.com/DocJ2000/xDownloader/releases/latest)
 
-安装包用户直接把新的 `xDownloader-Setup-*.exe` 覆盖安装到原安装目录即可。现有 `config.json` 和下载进度默认不会被卸载或覆盖，软件在保存或迁移配置前会写入 `config.json.bak` 作为备份。
+- `xDownloader-Setup-*.exe`: recommended guided Windows installer. It lets you choose the install folder and creates a normal Windows uninstall entry.
+- `xDownloader-*-windows.zip`: portable package for users who prefer not to install.
+- Source code archive: for developers who want to inspect, modify, or build the project.
 
-源码或便携 zip 用户升级时，保留 `xdownloader.py` 或 `xDownloader.exe` 旁边原有的 `config.json`，再替换应用文件。下次启动时，软件会自动补齐新增配置项。
+- `xDownloader-Setup-*.exe`：推荐的 Windows 安装包，可以选择安装路径，并支持系统卸载入口。
+- `xDownloader-*-windows.zip`：免安装便携版。
+- Source code：适合想阅读、修改或自行构建项目的开发者。
 
-### 功能预览
+## Interface Preview / 界面预览
 
-- 在本地浏览已下载媒体，不会跳转到原推文链接。
-- 时间线页面按时间显示本地归档内容。
-- 设置页覆盖账号凭据、保存路径、日期范围、列表同步、标签搜索、文本下载、重试、日志和主题。
-- 预览图只使用 Elon Musk、Donald J. Trump 等公开人物名称作为演示数据，不包含私人信息。
+xDownloader provides a full English and Chinese interface. You can switch languages inside the app.
 
-### 列表同步提示
+xDownloader 提供完整中英文界面，可以在软件内一键切换语言。
 
-优先使用 List ID。在浏览器打开 X 列表页，从下面这种地址里复制数字 ID：
+| Home / 首页 | Settings / 设置 |
+| --- | --- |
+| ![xDownloader Home English](docs/assets/preview-home-en.png) | ![xDownloader Settings English](docs/assets/preview-settings-en.png) |
+| ![xDownloader 中文首页](docs/assets/preview-home-zh.png) | ![xDownloader 中文设置](docs/assets/preview-settings-zh.png) |
 
-```text
-https://x.com/i/lists/1234567890
-```
+## Highlights / 功能亮点
 
-如果没有数字 ID，也可以填写 List Owner 和 List Slug。Owner 是账号名，Slug 是列表网址里的列表短名。
+- Local media browser: browse downloaded images and videos without reopening original tweet links.
+- Timeline view: review locally archived posts by time.
+- Media library: search and page through large local media collections.
+- Multi-list sync: paste X list links, sync selected lists, and merge members into one download list.
+- User list tools: bulk add, deduplicate, export, paginate, and remove unavailable users with confirmation.
+- Hot-applied settings: edit account credentials, save path, date range, media options, speed settings, proxy, logging, and theme from the UI.
+- Long-run friendly: pause, continue, terminate, preview progress, and optionally shut down Windows after a normal download completion.
+- No-loss upgrades: installer users can install new versions over the existing folder while keeping local config and data.
+- Bilingual by design: English and Chinese UI, README, and contribution docs.
 
-### 从源码运行
+- 本地媒体浏览器：不需要跳转原推文链接，就能浏览已下载图片和视频。
+- 时间线视图：按时间查看本地归档内容。
+- 媒体库：支持搜索、分页和跳转页码，适合大型本地媒体库。
+- 多列表同步：直接粘贴 X 列表链接，可同步选中列表，并把成员合并进下载名单。
+- 用户名单工具：批量添加、去重、导出、分页查看，并可二次确认后移除不存在用户。
+- 前端即时配置：账号凭据、保存路径、时间范围、下载内容、速度设置、代理、日志和主题都能在界面修改并应用。
+- 长任务友好：支持暂停、继续、终止、实时进度预览，也可以勾选“下载完成后自动关机”。
+- 无损升级：安装包用户覆盖安装到原目录即可保留本地配置和数据。
+- 双语设计：界面、README 和贡献文档都面向中英文用户。
+
+## Privacy / 隐私说明
+
+xDownloader is designed as a local-first tool.
+
+xDownloader 是本地优先的软件。
+
+- Your Cookie, Bearer Token, user list, save path, logs, and downloaded media stay on your own machine.
+- The app opens a local browser UI at `http://127.0.0.1:8765/`.
+- `config.json` is private local configuration and should never be committed or shared.
+- Before opening issues or pull requests, remove cookies, tokens, account secrets, local private paths, logs, and downloaded media.
+
+- Cookie、Bearer Token、用户名单、保存路径、日志和下载媒体都保存在你的本机。
+- 软件使用本地浏览器界面：`http://127.0.0.1:8765/`。
+- `config.json` 是私人本地配置文件，不应该提交或分享。
+- 提交 issue 或 pull request 前，请删除 Cookie、Token、账号密钥、本机私人路径、日志和下载媒体。
+
+## Run From Source / 从源码运行
 
 ```bash
 pip install -r requirements.txt
@@ -181,21 +95,91 @@ copy config.example.json config.json
 python xdownloader.py
 ```
 
-如果界面没有自动打开，可以手动访问：
+If the UI does not open automatically, visit:
+
+如果界面没有自动打开，请手动访问：
 
 ```text
 http://127.0.0.1:8765/
 ```
 
-### 项目结构
+You can also double-click:
 
-- `xdownloader.py` 和 `Start xDownloader.bat` 是源码启动入口。
-- `config.example.json` 是私人配置文件 `config.json` 的模板。
-- `xdownloader_app/` 存放运行代码和网页界面。
-- `packaging/` 存放 Windows 安装包和 exe 构建脚本。
-- `tests/` 存放回归测试。
+也可以直接双击：
 
-### 本地构建
+```text
+Start xDownloader.bat
+```
+
+## Windows Installer / Windows 安装包
+
+The recommended installer is `xDownloader-Setup-*.exe` from GitHub Releases.
+
+推荐普通用户下载 GitHub Releases 里的 `xDownloader-Setup-*.exe`。
+
+- Choose the install folder during setup.
+- `config.json` is created in the install folder on first run.
+- The installer build does not require users to install Python manually.
+- Windows gets a normal uninstall entry, and the install folder also contains an uninstaller.
+
+- 安装过程中可以选择安装路径。
+- 首次运行时会在安装目录生成 `config.json`。
+- 安装包版本不需要用户手动安装 Python。
+- Windows 会出现标准卸载入口，安装目录里也会有卸载程序。
+
+## No-Loss Upgrades / 无损升级
+
+Installer users can install a newer `xDownloader-Setup-*.exe` over the existing installation folder. Existing `config.json`, download progress, and local media are preserved by default.
+
+安装包用户可以把新的 `xDownloader-Setup-*.exe` 覆盖安装到原安装目录。默认会保留已有的 `config.json`、下载进度和本地媒体。
+
+xDownloader writes `config.json.bak` before saving or migrating configuration, giving you a simple local fallback if configuration changes go wrong.
+
+xDownloader 在保存或迁移配置前会写入 `config.json.bak`，如果配置改错了，可以用它作为本地备份。
+
+You can also open **Settings** and click **Check update**. If a newer GitHub Release exists, xDownloader can download the latest installer. Choose your current install folder during setup to upgrade without losing local configuration.
+
+也可以在 **设置** 页面点击 **检查更新**。如果 GitHub Release 有新版本，xDownloader 会提供最新安装包下载。安装时选择当前安装目录即可无损升级。
+
+For source or portable zip users, keep your existing `config.json` next to `xdownloader.py` or `xDownloader.exe`, then replace the application files. Missing new settings are added automatically on the next start.
+
+源码或便携版用户升级时，请保留 `xdownloader.py` 或 `xDownloader.exe` 旁边已有的 `config.json`，再替换应用文件。下次启动时软件会自动补齐新增配置项。
+
+## X List Sync Tips / X 列表同步提示
+
+The easiest way is to paste the X list link into the list sync table. Numeric list IDs are also supported.
+
+最简单的方式是直接把 X 列表链接粘贴到列表同步表格中，也支持数字列表 ID。
+
+Examples / 示例：
+
+```text
+https://x.com/i/lists/1234567890
+https://x.com/openai/lists/example-list
+1234567890
+```
+
+## Project Layout / 项目结构
+
+- `xdownloader.py`: source launcher.
+- `Start xDownloader.bat`: double-click launcher for source users.
+- `config.example.json`: template for private `config.json`.
+- `xdownloader_app/`: runtime code and browser UI.
+- `packaging/`: Windows exe and installer build scripts.
+- `tests/`: regression tests.
+- `docs/`: screenshots, promotion copy, and project docs.
+
+- `xdownloader.py`：源码启动入口。
+- `Start xDownloader.bat`：源码用户可双击启动。
+- `config.example.json`：私人配置文件 `config.json` 的模板。
+- `xdownloader_app/`：运行代码和网页界面。
+- `packaging/`：Windows exe 与安装包构建脚本。
+- `tests/`：回归测试。
+- `docs/`：截图、推广文案和项目文档。
+
+## Build Locally / 本地构建
+
+Build the portable exe and installer:
 
 构建便携 exe 和安装包：
 
@@ -203,30 +187,56 @@ http://127.0.0.1:8765/
 ./packaging/build_windows_exe.ps1 -Version local
 ```
 
+Build only the portable exe:
+
 只构建便携 exe：
 
 ```powershell
 ./packaging/build_windows_exe.ps1 -Version local -SkipInstaller
 ```
 
+Generated files are written to `release/`, which is ignored by Git.
+
 生成文件会写入 `release/`，该目录不会提交到 Git。
 
-### 双语提交
-
-提交信息请使用中英双语，方便中英文读者理解历史：
-
-```text
-Add installer packaging / 添加安装包构建
-Improve settings date picker / 优化设置页日期选择
-```
-
-### 测试
+## Tests / 测试
 
 ```bash
 python -m unittest discover -s tests -v
 python -m compileall -q xdownloader.py xdownloader_app
 ```
 
-### 参与贡献
+## Contributing / 参与贡献
 
-欢迎贡献。Bug 和产品建议可以开 issue，代码改动请使用 pull request。
+Contributions are welcome. You can help with bug fixes, UI polish, documentation, installer improvements, tests, and feature ideas.
+
+欢迎贡献。你可以帮助修复 bug、优化界面、完善文档、改进安装包、补充测试或提出功能建议。
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+提交 pull request 前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+Commit messages should be bilingual when possible:
+
+提交信息建议尽量中英双语：
+
+### Bilingual commits / 双语提交
+
+```text
+Improve media pagination / 优化媒体分页
+Add installer update flow / 增加安装包更新流程
+```
+
+## Roadmap Ideas / 后续方向
+
+- Better packaged desktop shell instead of browser-only UI.
+- More media playback controls.
+- Safer credential import helpers.
+- More automated release checks.
+- More language packs if contributors are interested.
+
+- 更完整的桌面外壳，不只依赖浏览器界面。
+- 更强的媒体播放控制。
+- 更安全的凭据导入辅助功能。
+- 更完善的自动发布检查。
+- 如果有贡献者参与，可以增加更多语言包。

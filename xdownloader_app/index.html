@@ -18,6 +18,9 @@
     --accent-glow: #a29bfe;
     --border: rgba(255,255,255,0.06);
     --border-strong: rgba(255,255,255,0.1);
+    --module-bg: rgba(20,20,30,0.82);
+    --module-border: rgba(255,255,255,0.14);
+    --module-shadow: 0 14px 34px rgba(0,0,0,0.22);
     --radius: 12px;
     --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
     --font-mono: 'Cascadia Code', 'Fira Code', monospace;
@@ -43,6 +46,9 @@
     --accent-glow: #8b6914;
     --border: #e8e4dd;
     --border-strong: #d4cfc6;
+    --module-bg: #ffffff;
+    --module-border: #d8d1c6;
+    --module-shadow: 0 10px 28px rgba(58,42,20,0.08);
     --radius: 4px;
     --font: 'Georgia', 'Noto Serif SC', serif;
     --font-mono: 'Courier New', monospace;
@@ -175,8 +181,8 @@ body {
     gap: 10px; align-items: stretch;
 }
 .home-panel {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 12px; min-width: 0; min-height: 0;
+    background: var(--module-bg); border: 1px solid var(--module-border); border-radius: var(--radius);
+    padding: 12px; min-width: 0; min-height: 0; box-shadow: var(--module-shadow);
 }
 .home-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
 .home-subtitle { color: var(--text-dim); line-height: 1.4; font-size: 13px; max-width: 760px; }
@@ -223,8 +229,14 @@ body {
 .form-group .checkbox-label { text-transform: none; letter-spacing: 0; display: inline; }
 .form-row { display: flex; gap: 12px; }
 .form-row .form-group { flex: 1; }
-.form-section { margin-bottom: 24px; }
-.form-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); color: var(--accent); }
+.form-section {
+    margin-bottom: 18px; padding: 14px; border: 1px solid var(--module-border);
+    border-radius: var(--radius); background: var(--module-bg); box-shadow: var(--module-shadow);
+}
+.form-section h3 {
+    font-size: 14px; font-weight: 700; margin: -2px -2px 14px; padding: 0 0 9px;
+    border-bottom: 1px solid var(--module-border); color: var(--accent);
+}
 
 /* ===== Badge ===== */
 .badge {
@@ -278,10 +290,11 @@ body {
 .tag .remove:hover { opacity: 1; }
 
 /* ===== Browse Tab ===== */
-.browse-layout { display: flex; height: 100%; }
+.browse-layout { display: flex; height: 100%; padding: 12px 16px; gap: 12px; background: var(--bg); }
 .user-sidebar {
     width: 240px; min-width: 240px;
-    border-right: 1px solid var(--border);
+    border: 1px solid var(--module-border); border-radius: var(--radius);
+    background: var(--module-bg); box-shadow: var(--module-shadow);
     display: flex; flex-direction: column; overflow: hidden;
 }
 .user-sidebar-search { padding: 8px; border-bottom: 1px solid var(--border); }
@@ -308,7 +321,10 @@ body {
 .user-row-handle { font-size: 11px; color: var(--text-dim); }
 .user-row-stats { font-size: 10px; color: var(--text-muted); }
 
-.timeline-panel { flex: 1; overflow-y: auto; }
+.timeline-panel {
+    flex: 1; overflow-y: auto; border: 1px solid var(--module-border);
+    border-radius: var(--radius); background: var(--module-bg); box-shadow: var(--module-shadow);
+}
 .tweet-card {
     padding: 14px 16px; border-bottom: 1px solid var(--border);
     display: flex; gap: 10px; transition: background 0.1s;
@@ -381,11 +397,17 @@ body {
 .download-layout { height: 100%; min-height: 0; padding: 12px 16px; overflow: hidden; display: grid; grid-template-rows: minmax(0, 1fr); gap: 10px; }
 .download-control-strip {
     display: grid; grid-template-columns: minmax(260px, auto) minmax(320px, 1fr) auto;
-    gap: 10px; align-items: center; background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 10px;
+    gap: 10px; align-items: center; background: var(--module-bg); border: 1px solid var(--module-border);
+    border-radius: var(--radius); padding: 12px; box-shadow: var(--module-shadow);
 }
-.download-workflow-grid { min-height: 0; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr); gap: 12px; overflow: hidden; }
-.download-list-panel, .download-live-panel { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
+.auto-shutdown-toggle {
+    display: flex; align-items: center; gap: 7px; width: 100%;
+    color: var(--text); font-size: 12px; font-weight: 700;
+}
+.auto-shutdown-toggle input { width: auto; margin: 0; }
+.auto-shutdown-hint { color: var(--text-dim); font-size: 11px; line-height: 1.35; max-width: 260px; }
+.download-workflow-grid { min-height: 0; display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(360px, 0.82fr); gap: 12px; overflow: hidden; }
+.download-list-panel, .download-live-panel { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
 .download-live-panel .download-log { flex: 1; max-height: none; }
 .download-column-main, .download-column-side { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
 .download-log-panel { grid-column: 1 / -1; min-height: 0; }
@@ -394,6 +416,30 @@ body {
 .download-layout .form-group { margin-bottom: 8px; }
 .download-user-grid { display: grid; grid-template-columns: minmax(280px, 1.1fr) minmax(220px, 0.9fr); gap: 10px; }
 .download-user-grid textarea { min-height: 72px; }
+.download-list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.download-list-summary { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-bottom: 10px; }
+.download-list-summary .queue-chip { border: 1px solid var(--border); border-radius: 6px; padding: 7px 8px; background: var(--panel); }
+.download-list-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.download-list-panel .download-primary-panel, .download-module { min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.download-users-module { flex: 1; }
+.download-fill { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 8px; }
+.download-user-table { flex: 1; min-height: 180px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; }
+.download-user-pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.download-user-pager .media-page-jump input { width: 72px; }
+.download-sync-box { max-height: 300px; overflow: auto; padding-right: 2px; }
+.download-bulk-list { min-height: 62px; }
+.list-sync-table { border:1px solid var(--module-border); border-radius:var(--radius); overflow:hidden; background:var(--panel); }
+.list-sync-head, .list-sync-row-grid { display:grid; grid-template-columns: 34px minmax(100px,0.85fr) minmax(220px,1.5fr) minmax(130px,0.9fr) minmax(110px,0.9fr) minmax(128px,auto); gap:8px; align-items:center; }
+.list-sync-head { padding:8px 10px; color:var(--text-dim); font-size:11px; font-weight:700; text-transform:uppercase; border-bottom:1px solid var(--border); }
+.list-sync-item { padding:8px 10px; border-bottom:1px solid var(--border); }
+.list-sync-item:last-child { border-bottom:none; }
+.list-sync-row-grid input[type="text"] { width:100%; min-width:0; padding:7px 8px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:var(--text); }
+.list-sync-row-grid input[type="checkbox"] { width:auto; margin:0; }
+.list-sync-row-actions { display:flex; justify-content:flex-end; gap:6px; flex-wrap:wrap; }
+.list-sync-status { color:var(--text-dim); font-size:12px; margin-top:6px; min-height:18px; }
+.list-sync-status.running { color:var(--yellow); }
+.list-sync-status.success { color:var(--green); }
+.list-sync-status.failed { color:var(--red); }
 .download-options-grid { display: grid; grid-template-columns: repeat(3, minmax(140px, 1fr)); gap: 10px; }
 .download-options-grid .form-group { margin-bottom: 0; }
 .download-side-actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -432,12 +478,25 @@ body {
     padding: 12px; min-height: 80px; max-height: 160px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px;
     line-height: 1.6; white-space: pre-wrap; color: var(--text-dim);
 }
+.download-history-card {
+    background: var(--module-bg); border: 1px solid var(--module-border);
+    border-radius: var(--radius); padding: 12px; box-shadow: var(--module-shadow);
+}
+.download-history-title { display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:800; font-size:13px; margin-bottom:8px; }
+.download-history-row {
+    display:grid; grid-template-columns: minmax(150px, 1.2fr) repeat(5, minmax(70px, 0.7fr));
+    gap:8px; align-items:center; padding:7px 0; border-top:1px solid var(--border); font-size:12px;
+}
+.download-history-row:first-child { border-top:none; }
+.download-history-row span { color: var(--text-dim); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.download-history-row strong { color: var(--text); font-weight:800; }
 
 /* ===== Timeline Tab ===== */
-.timeline-layout { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+.timeline-layout { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 12px 16px; gap: 12px; }
 .timeline-toolbar {
     display: flex; align-items: center; gap: 10px; padding: 12px 16px;
-    border-bottom: 1px solid var(--border); background: var(--panel);
+    border: 1px solid var(--module-border); border-radius: var(--radius);
+    background: var(--module-bg); box-shadow: var(--module-shadow);
 }
 .timeline-toolbar input {
     flex: 1; min-width: 180px; height: 34px; border: 1px solid var(--border);
@@ -449,7 +508,10 @@ body {
     background: var(--card); color: var(--text); padding: 0 8px;
 }
 .timeline-meta { color: var(--text-dim); font-size: 12px; white-space: nowrap; }
-.timeline-list { flex: 1; overflow-y: auto; }
+.timeline-list {
+    flex: 1; overflow-y: auto; border: 1px solid var(--module-border);
+    border-radius: var(--radius); background: var(--module-bg); box-shadow: var(--module-shadow);
+}
 .timeline-item {
     padding: 12px 16px; border-bottom: 1px solid var(--border);
     background: transparent;
@@ -470,14 +532,16 @@ body {
 .timeline-stats { display: flex; gap: 14px; margin-top: 8px; color: var(--text-dim); font-size: 12px; }
 .timeline-pager {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 10px 16px; border-top: 1px solid var(--border); background: var(--panel);
+    padding: 10px 16px; border: 1px solid var(--module-border);
+    border-radius: var(--radius); background: var(--module-bg); box-shadow: var(--module-shadow);
 }
 
 /* ===== Media Library Tab ===== */
-.media-layout { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+.media-layout { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 12px 16px; gap: 12px; }
 .media-toolbar {
     display: flex; align-items: center; gap: 10px; padding: 12px 16px;
-    border-bottom: 1px solid var(--border); background: var(--panel);
+    border: 1px solid var(--module-border); border-radius: var(--radius);
+    background: var(--module-bg); box-shadow: var(--module-shadow);
 }
 .media-toolbar input {
     flex: 1; min-width: 180px; height: 34px; border: 1px solid var(--border);
@@ -489,7 +553,8 @@ body {
     background: var(--card); color: var(--text); padding: 0 8px;
 }
 .media-library-grid {
-    flex: 1; overflow-y: auto; padding: 12px;
+    flex: 1; overflow-y: auto; padding: 12px; border: 1px solid var(--module-border);
+    border-radius: var(--radius); background: var(--module-bg); box-shadow: var(--module-shadow);
     display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px; align-content: start;
 }
@@ -504,20 +569,36 @@ body {
 .media-tile-title { color: var(--text); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .media-pager {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 10px 16px; border-top: 1px solid var(--border); background: var(--panel);
+    padding: 10px 16px; border: 1px solid var(--module-border);
+    border-radius: var(--radius); background: var(--module-bg); box-shadow: var(--module-shadow);
 }
+.media-pager-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.timeline-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.pager-step { padding-left: 10px; padding-right: 10px; }
+.media-page-jump { display: flex; align-items: center; gap: 6px; color: var(--text-dim); font-size: 12px; }
+.media-page-jump input { width: 76px; height: 34px; padding: 0 8px; }
 .media-meta { color: var(--text-dim); font-size: 12px; white-space: nowrap; }
+.media-source-meta {
+    padding: 8px 12px; color: var(--text-dim); border: 1px solid var(--module-border);
+    border-radius: var(--radius); background: var(--module-bg); box-shadow: var(--module-shadow);
+}
 @media (max-width: 720px) {
     .timeline-toolbar { flex-wrap: wrap; }
     .timeline-thumb { width: 72px; height: 72px; }
     .media-toolbar { flex-wrap: wrap; }
+    .media-pager { align-items: flex-start; flex-direction: column; }
+    .media-pager-controls { justify-content: flex-start; }
     .media-library-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
 }
 
 /* ===== Settings Tab ===== */
-.settings-layout { padding: 18px; overflow-y: auto; max-width: 980px; }
-.settings-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 340px); gap: 16px; align-items: start; }
-.settings-main, .settings-side { min-width: 0; }
+.settings-layout { padding: 18px; overflow-y: auto; max-width: none; width: 100%; }
+.settings-grid {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr) minmax(280px, 0.9fr);
+    gap: 16px; align-items: start;
+}
+.settings-column, .settings-main, .settings-side, .settings-advanced { min-width: 0; }
 .settings-actions { position: sticky; bottom: 0; margin-top: 16px; display: flex; gap: 8px; padding: 12px 0; background: var(--bg); }
 .config-status {
     border: 1px solid var(--border); border-radius: 8px; background: var(--card);
@@ -559,6 +640,11 @@ body {
     .setup-hero { grid-template-columns: 1fr; }
     .setup-steps { justify-content: flex-start; }
     .settings-layout { max-width: none; }
+}
+@media (min-width: 861px) and (max-width: 1180px) {
+    .settings-grid { grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr); }
+    .settings-advanced { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr); gap: 16px; }
+    .settings-advanced .form-section { margin-bottom: 0; }
 }
 </style>
 </head>
@@ -662,6 +748,14 @@ const APP_TEXT = {
         addedVideos: '新增视频',
         addedMedia: '新增媒体合计',
         addedTextTweets: '新增文字推文',
+        recentDownloads: '最近下载',
+        noDownloadHistory: '暂无下载记录',
+        historyNewMedia: '新增媒体',
+        historyNewTweets: '新增推文',
+        historyNewSize: '新增容量',
+        historyUsers: '用户数',
+        historyFinishedAt: '完成时间',
+        historyDuration: '历时',
         syncing: '同步中...',
         running: '运行中',
         doneIdle: '完成/待机',
@@ -727,6 +821,10 @@ const APP_TEXT = {
         reset: '重置',
         previousPage: '上一页',
         nextPage: '下一页',
+        previousFivePages: '-5 页',
+        nextFivePages: '+5 页',
+        pageLabel: '页码',
+        jumpPage: '跳转',
         loadingTimeline: '加载时间线...',
         tweetCount: '{count} 条推文',
         pageOf: '第 {page} / {total} 页',
@@ -735,6 +833,10 @@ const APP_TEXT = {
         mediaSearchPlaceholder: '搜索媒体内容、用户名...',
         loadingMedia: '加载媒体...',
         mediaCount: '{count} 个媒体',
+        mediaIndexedCount: 'CSV 索引 {count}',
+        mediaLocalCount: '本地文件 {count}',
+        mediaOrphanCount: '未索引 {count}',
+        mediaRefresh: '刷新媒体库',
         noMedia: '没有匹配的媒体',
         mediaFailed: '媒体加载失败：',
         userListTitle: '用户名单',
@@ -742,7 +844,9 @@ const APP_TEXT = {
         syncSettings: '同步设置',
         listId: '列表 ID',
         listOwner: '列表所有者',
-        listName: '列表名',
+        listName: '备注名',
+        listUrl: '列表链接或 ID',
+        listParsed: '解析结果',
         syncList: '同步列表',
         startDownload: '开始下载',
         stop: '停止',
@@ -758,7 +862,7 @@ const APP_TEXT = {
         userCount: '个用户',
         fillUserList: '请先填写用户名单',
         downloadStarted: '下载已开始',
-        fillListId: '请先填写列表 ID',
+        fillListId: '请填写列表 ID，或同时填写列表所有者和 URL 短名。',
         syncRequestFailed: '同步请求失败: ',
         listSyncHeader: '--- 列表同步 ---',
         syncStarted: '列表同步已开始',
@@ -766,6 +870,17 @@ const APP_TEXT = {
         syncCompleteNoNew: '同步完成，共 {count} 名成员，无新增',
         syncCompleteNoNewToast: '同步完成，无新增用户',
         syncComplete: '同步完成',
+        completeList: '完成',
+        deleteSelectedLists: '删除选中',
+        deleteConfirmKeyword: 'delete',
+        deleteSelectedListsConfirm: '将删除 {count} 个已勾选列表。是否继续？',
+        deleteSelectedListsPrompt: '请输入 delete 确认删除已勾选列表',
+        deleteSelectedListsNone: '请先勾选要删除的列表',
+        selectedListsDeleted: '已删除 {count} 个列表',
+        syncStatusIdle: '未同步',
+        syncStatusRunning: '同步中...',
+        syncStatusSuccess: '同步成功',
+        syncStatusFailed: '同步失败',
         options: '下载选项',
         timeRange: '时间范围',
         imageFormat: '图片格式',
@@ -790,8 +905,8 @@ const APP_TEXT = {
         maxTweets: '最大推文数',
         requestDelay: '请求间隔',
         maxRetries: '最大重试',
-        listSlug: '列表短名',
-        listSyncHelp: '优先使用列表 ID。可添加多个列表，并一键同步所有启用列表。',
+        listSlug: 'URL 短名',
+        listSyncHelp: '同步需要数字列表 ID，例如 X 列表网址 /i/lists/1234567890 里的 1234567890。备注名只是给自己看的名称；URL 短名是 owner/slug 链接里的 slug。',
         bulkAddUsers: '批量添加用户',
         filterUsers: '筛选用户名',
         filterUsersPlaceholder: '输入关键词过滤名单',
@@ -806,13 +921,26 @@ const APP_TEXT = {
         clearUsers: '清空名单',
         userManagerHelp: '支持批量粘贴，每行一个用户名。系统会自动去重并去掉 @。',
         addList: '添加列表',
+        bulkImportLists: '批量导入列表',
+        bulkImportListsPlaceholder: '每行一个列表：1234567890 或 AI 列表,1234567890 或 owner/slug',
+        importLists: '导入列表',
+        listCount: '个列表',
+        duplicateCount: '重复',
+        enabledListCount: '启用列表',
+        lastSync: '最近同步',
+        notSyncedYet: '尚未同步',
+        listWorkspaceHint: '名单会自动去重；列表同步成功后会合并到同一份下载名单。',
         remove: '删除',
         syncAllLists: '同步全部列表',
         pauseDownload: '暂停下载',
         continueDownload: '继续下载',
         terminateDownload: '终止下载',
         downloadPaused: '下载已暂停',
-        downloadTerminated: '下载已终止'
+        downloadTerminated: '下载已终止',
+        downloadFailed: '下载失败，请查看日志',
+        autoShutdownAfterDownload: '下载完成后自动关机',
+        autoShutdownHint: '仅在下载正常完成后关机；暂停、终止或失败不会关机。',
+        shutdownScheduled: '下载完成，已安排 60 秒后自动关机'
     },
     en: {
         htmlLang: 'en',
@@ -842,6 +970,14 @@ const APP_TEXT = {
         addedVideos: 'New videos',
         addedMedia: 'New media total',
         addedTextTweets: 'New text tweets',
+        recentDownloads: 'Recent downloads',
+        noDownloadHistory: 'No download history yet',
+        historyNewMedia: 'New media',
+        historyNewTweets: 'New tweets',
+        historyNewSize: 'New size',
+        historyUsers: 'Users',
+        historyFinishedAt: 'Finished',
+        historyDuration: 'Duration',
         syncing: 'Syncing...',
         running: 'Running',
         doneIdle: 'Done / idle',
@@ -907,6 +1043,10 @@ const APP_TEXT = {
         reset: 'Reset',
         previousPage: 'Previous',
         nextPage: 'Next',
+        previousFivePages: '-5 pages',
+        nextFivePages: '+5 pages',
+        pageLabel: 'Page',
+        jumpPage: 'Go',
         loadingTimeline: 'Loading timeline...',
         tweetCount: '{count} tweets',
         pageOf: 'Page {page} / {total}',
@@ -915,6 +1055,10 @@ const APP_TEXT = {
         mediaSearchPlaceholder: 'Search media text or usernames...',
         loadingMedia: 'Loading media...',
         mediaCount: '{count} media items',
+        mediaIndexedCount: 'CSV indexed {count}',
+        mediaLocalCount: 'Local files {count}',
+        mediaOrphanCount: 'Unindexed {count}',
+        mediaRefresh: 'Refresh media',
         noMedia: 'No matching media',
         mediaFailed: 'Media failed: ',
         userListTitle: 'User list',
@@ -922,7 +1066,9 @@ const APP_TEXT = {
         syncSettings: 'Sync settings',
         listId: 'List ID',
         listOwner: 'List owner',
-        listName: 'List name',
+        listName: 'Display name',
+        listUrl: 'List link or ID',
+        listParsed: 'Parsed as',
         syncList: 'Sync list',
         startDownload: 'Start download',
         stop: 'Stop',
@@ -938,7 +1084,7 @@ const APP_TEXT = {
         userCount: 'users',
         fillUserList: 'Please fill in the user list first',
         downloadStarted: 'Download started',
-        fillListId: 'Please fill in the list ID first',
+        fillListId: 'Enter a List ID, or fill both List owner and URL slug.',
         syncRequestFailed: 'Sync request failed: ',
         listSyncHeader: '--- List sync ---',
         syncStarted: 'List sync started',
@@ -946,6 +1092,17 @@ const APP_TEXT = {
         syncCompleteNoNew: 'Sync complete, {count} members, no new users',
         syncCompleteNoNewToast: 'Sync complete, no new users',
         syncComplete: 'Sync complete',
+        completeList: 'Done',
+        deleteSelectedLists: 'Delete selected',
+        deleteConfirmKeyword: 'delete',
+        deleteSelectedListsConfirm: 'Delete {count} selected lists. Continue?',
+        deleteSelectedListsPrompt: 'Type delete to confirm deleting selected lists',
+        deleteSelectedListsNone: 'Select lists to delete first',
+        selectedListsDeleted: 'Deleted {count} lists',
+        syncStatusIdle: 'Not synced',
+        syncStatusRunning: 'Syncing...',
+        syncStatusSuccess: 'Sync succeeded',
+        syncStatusFailed: 'Sync failed',
         options: 'Download options',
         timeRange: 'Time range',
         imageFormat: 'Image format',
@@ -970,8 +1127,8 @@ const APP_TEXT = {
         maxTweets: 'Max tweets',
         requestDelay: 'Request delay',
         maxRetries: 'Max retries',
-        listSlug: 'List slug',
-        listSyncHelp: 'List ID is preferred. Add multiple lists and sync all enabled lists at once.',
+        listSlug: 'URL slug',
+        listSyncHelp: 'Sync needs the numeric list ID, such as 1234567890 from /i/lists/1234567890. Display name is only your local label; URL slug is the slug from an owner/slug link.',
         bulkAddUsers: 'Bulk add users',
         filterUsers: 'Filter users',
         filterUsersPlaceholder: 'Type to filter the list',
@@ -986,13 +1143,26 @@ const APP_TEXT = {
         clearUsers: 'Clear users',
         userManagerHelp: 'Paste many usernames at once, one per line. The app removes @ and duplicates automatically.',
         addList: 'Add list',
+        bulkImportLists: 'Bulk import lists',
+        bulkImportListsPlaceholder: 'One list per line: 1234567890, AI list,1234567890, or owner/slug',
+        importLists: 'Import lists',
+        listCount: 'lists',
+        duplicateCount: 'duplicates',
+        enabledListCount: 'enabled lists',
+        lastSync: 'Last sync',
+        notSyncedYet: 'Not synced yet',
+        listWorkspaceHint: 'Users are deduplicated automatically. Synced lists merge into the same download list.',
         remove: 'Remove',
         syncAllLists: 'Sync all lists',
         pauseDownload: 'Pause download',
         continueDownload: 'Continue download',
         terminateDownload: 'Terminate download',
         downloadPaused: 'Download paused',
-        downloadTerminated: 'Download terminated'
+        downloadTerminated: 'Download terminated',
+        downloadFailed: 'Download failed. Check the log',
+        autoShutdownAfterDownload: 'Shut down after completion',
+        autoShutdownHint: 'Only runs after a normal download completion; pause, terminate, or failure will not shut down.',
+        shutdownScheduled: 'Download complete. Shutdown scheduled in 60 seconds'
     }
 };
 
@@ -1131,6 +1301,28 @@ function renderDownloadStats(st, mediaTotal) {
         + '<tr><td style="padding:3px 12px 3px 0;color:var(--text-dim)">' + t('addedMedia') + '</td><td style="font-weight:500;color:#a78bfa">' + mediaTotal + '</td></tr>'
         + '<tr><td style="padding:3px 12px 3px 0;color:var(--text-dim)">' + t('addedTextTweets') + '</td><td style="font-weight:500;color:#60a5fa">' + (st.text_tweets || 0) + '</td></tr>'
         + '</table></div>';
+}
+
+function renderDownloadHistory(history) {
+    const items = (history || []).slice().reverse();
+    if (!items.length) {
+        return '<div class="empty-state" style="padding:18px 8px">' + t('noDownloadHistory') + '</div>';
+    }
+    return items.map(item => {
+        return '<div class="download-history-row">'
+            + '<span title="' + esc(item.finished_at || '') + '">' + t('historyFinishedAt') + ' <strong>' + esc(item.finished_at || '--') + '</strong></span>'
+            + '<span>' + t('historyDuration') + ' <strong>' + esc(item.duration || '--') + '</strong></span>'
+            + '<span>' + t('historyUsers') + ' <strong>' + (item.users || 0) + '</strong></span>'
+            + '<span>' + t('historyNewMedia') + ' <strong>' + (item.new_media || 0) + '</strong></span>'
+            + '<span>' + t('historyNewTweets') + ' <strong>' + (item.new_tweets || 0) + '</strong></span>'
+            + '<span>' + t('historyNewSize') + ' <strong>' + esc(item.new_size || '0 B') + '</strong></span>'
+            + '</div>';
+    }).join('');
+}
+
+function updateDownloadHistory(history) {
+    const box = document.getElementById('dlHistory');
+    if (box) box.innerHTML = renderDownloadHistory(history || []);
 }
 
 function toast(msg, type='success') {
@@ -1675,6 +1867,7 @@ function renderMediaBlock(items) {
 
 /* ===== Timeline Tab ===== */
 let timelineState = { page: 1, perPage: 30, query: '', media: 'all' };
+let timelineTotalPages = 1;
 try {
     const savedTimeline = JSON.parse(localStorage.getItem('xdl.timelineState') || '{}');
     timelineState = Object.assign(timelineState, savedTimeline);
@@ -1706,8 +1899,14 @@ function initTimelineTab() {
         <div class="timeline-pager">
             <div class="timeline-meta" id="timelinePagerText">--</div>
             <div class="timeline-actions">
-                <button class="btn btn-secondary" onclick="timelinePrev()">${t('previousPage')}</button>
-                <button class="btn btn-secondary" onclick="timelineNext()">${t('nextPage')}</button>
+                <button class="btn btn-secondary pager-step" onclick="timelineStepPage(-5)">${t('previousFivePages')}</button>
+                <button class="btn btn-secondary" onclick="timelineStepPage(-1)">${t('previousPage')}</button>
+                <label class="media-page-jump">${t('pageLabel')}
+                    <input id="timelinePageJump" type="number" min="1" value="${timelineState.page}" onkeydown="if(event.key==='Enter')timelineJumpToPage()">
+                </label>
+                <button class="btn btn-secondary" onclick="timelineJumpToPage()">${t('jumpPage')}</button>
+                <button class="btn btn-secondary" onclick="timelineStepPage(1)">${t('nextPage')}</button>
+                <button class="btn btn-secondary pager-step" onclick="timelineStepPage(5)">${t('nextFivePages')}</button>
             </div>
         </div>
     </div>`;
@@ -1753,15 +1952,24 @@ function timelineSetMedia(value) {
 }
 
 function timelinePrev() {
-    if (timelineState.page > 1) {
-        timelineState.page -= 1;
-        saveTimelineState();
-        loadTimeline();
-    }
+    timelineStepPage(-1);
 }
 
 function timelineNext() {
-    timelineState.page += 1;
+    timelineStepPage(1);
+}
+
+function timelineStepPage(delta) {
+    timelineState.page = Math.max(1, Math.min(timelineTotalPages || 1, (timelineState.page || 1) + delta));
+    saveTimelineState();
+    loadTimeline();
+}
+
+function timelineJumpToPage() {
+    const input = document.getElementById('timelinePageJump');
+    const raw = parseInt(input && input.value, 10);
+    timelineState.page = Math.max(1, Math.min(timelineTotalPages || 1, raw || 1));
+    if (input) input.value = String(timelineState.page);
     saveTimelineState();
     loadTimeline();
 }
@@ -1780,9 +1988,14 @@ async function loadTimeline() {
         const r = await fetch(url);
         const data = await r.json();
         timelineState.page = data.page || 1;
-        const totalPages = data.total_pages || 1;
+        timelineTotalPages = data.total_pages || 1;
+        const jumpInput = document.getElementById('timelinePageJump');
+        if (jumpInput) {
+            jumpInput.max = String(timelineTotalPages);
+            jumpInput.value = String(timelineState.page);
+        }
         meta.textContent = t('tweetCount', {count: data.total || 0});
-        pager.textContent = t('pageOf', {page: timelineState.page, total: totalPages});
+        pager.textContent = t('pageOf', {page: timelineState.page, total: timelineTotalPages});
         if (!data.items || !data.items.length) {
             list.innerHTML = '<div class="empty-state">' + t('noTweets') + '</div>';
             return;
@@ -1816,6 +2029,7 @@ function renderTimelineItem(item) {
 
 /* ===== Media Library Tab ===== */
 let mediaState = { page: 1, perPage: 60, query: '', media: 'all' };
+let mediaTotalPages = 1;
 try {
     const savedMedia = JSON.parse(localStorage.getItem('xdl.mediaState') || '{}');
     mediaState = Object.assign(mediaState, savedMedia);
@@ -1836,17 +2050,26 @@ function initMediaTab() {
                 <option value="60">60 ${t('perPage')}</option>
                 <option value="100">100 ${t('perPage')}</option>
                 <option value="160">160 ${t('perPage')}</option>
+                <option value="200">200 ${t('perPage')}</option>
             </select>
             <button class="btn btn-secondary" onclick="mediaSearch()">${t('search')}</button>
             <button class="btn btn-secondary" onclick="mediaReset()">${t('reset')}</button>
+            <button class="btn btn-secondary" onclick="mediaRefresh()">${t('mediaRefresh')}</button>
             <span class="media-meta" id="mediaMeta">--</span>
         </div>
+        <div class="media-meta media-source-meta" id="mediaSourceMeta">--</div>
         <div class="media-library-grid" id="mediaGrid"></div>
         <div class="media-pager">
             <div class="media-meta" id="mediaPagerText">--</div>
-            <div>
-                <button class="btn btn-secondary" onclick="mediaPrev()">${t('previousPage')}</button>
-                <button class="btn btn-secondary" onclick="mediaNext()">${t('nextPage')}</button>
+            <div class="media-pager-controls">
+                <button class="btn btn-secondary pager-step" onclick="mediaStepPage(-5)">${t('previousFivePages')}</button>
+                <button class="btn btn-secondary" onclick="mediaStepPage(-1)">${t('previousPage')}</button>
+                <label class="media-page-jump">${t('pageLabel')}
+                    <input id="mediaPageJump" type="number" min="1" value="${mediaState.page}" onkeydown="if(event.key==='Enter')mediaJumpToPage()">
+                </label>
+                <button class="btn btn-secondary" onclick="mediaJumpToPage()">${t('jumpPage')}</button>
+                <button class="btn btn-secondary" onclick="mediaStepPage(1)">${t('nextPage')}</button>
+                <button class="btn btn-secondary pager-step" onclick="mediaStepPage(5)">${t('nextFivePages')}</button>
             </div>
         </div>
     </div>`;
@@ -1885,15 +2108,29 @@ function mediaSetPerPage(value) {
     saveMediaState();
     loadMediaLibrary();
 }
+function mediaRefresh() {
+    mediaState.page = 1;
+    window._mediaForceRefresh = true;
+    saveMediaState();
+    loadMediaLibrary();
+}
 function mediaPrev() {
-    if (mediaState.page > 1) {
-        mediaState.page -= 1;
-        saveMediaState();
-        loadMediaLibrary();
-    }
+    mediaStepPage(-1);
 }
 function mediaNext() {
-    mediaState.page += 1;
+    mediaStepPage(1);
+}
+function mediaStepPage(delta) {
+    mediaState.page = Math.max(1, Math.min(mediaTotalPages || 1, (mediaState.page || 1) + delta));
+    saveMediaState();
+    loadMediaLibrary();
+}
+function mediaJumpToPage() {
+    const input = document.getElementById('mediaPageJump');
+    const raw = parseInt(input && input.value, 10);
+    const target = Math.max(1, Math.min(mediaTotalPages || 1, raw || 1));
+    mediaState.page = target;
+    if (input) input.value = String(target);
     saveMediaState();
     loadMediaLibrary();
 }
@@ -1904,13 +2141,29 @@ async function loadMediaLibrary() {
     const url = '/api/media?page=' + mediaState.page
         + '&per_page=' + mediaState.perPage
         + '&q=' + encodeURIComponent(mediaState.query)
-        + '&media=' + encodeURIComponent(mediaState.media || 'all');
+        + '&media=' + encodeURIComponent(mediaState.media || 'all')
+        + (window._mediaForceRefresh ? '&refresh=1' : '');
+    window._mediaForceRefresh = false;
     try {
         const r = await fetch(url);
         const data = await r.json();
         mediaState.page = data.page || 1;
+        mediaTotalPages = data.total_pages || 1;
+        const jumpInput = document.getElementById('mediaPageJump');
+        if (jumpInput) {
+            jumpInput.max = String(mediaTotalPages);
+            jumpInput.value = String(mediaState.page);
+        }
         document.getElementById('mediaMeta').textContent = t('mediaCount', {count: data.total || 0});
-        document.getElementById('mediaPagerText').textContent = t('pageOf', {page: mediaState.page, total: data.total_pages || 1});
+        const sourceMeta = document.getElementById('mediaSourceMeta');
+        if (sourceMeta) {
+            sourceMeta.textContent = [
+                t('mediaIndexedCount', {count: data.indexed || 0}),
+                t('mediaLocalCount', {count: data.local || 0}),
+                t('mediaOrphanCount', {count: data.orphan || 0})
+            ].join(' · ');
+        }
+        document.getElementById('mediaPagerText').textContent = t('pageOf', {page: mediaState.page, total: mediaTotalPages});
         if (!data.items || !data.items.length) {
             grid.innerHTML = '<div class="empty-state">' + t('noMedia') + '</div>';
             return;
@@ -1938,27 +2191,66 @@ let downloadPolling = null;
 let syncPolling = null;
 let syncLogCount = 0;
 let downloadUsers = [];
+let downloadUserListPage = 1;
+const downloadUserListPerPage = 20;
+let downloadUserListTotalPages = 1;
 let listSyncItems = [];
+let listSyncStatuses = {};
 
 function initDownloadTab() {
     const container = document.getElementById('tab-download');
     container.innerHTML = `<div class="download-layout">
         <div class="download-workflow-grid">
             <div class="download-list-panel">
-                <div class="form-section download-primary-panel"><h3>${t('userListTitle')} <span id="dlUserCount" style="font-weight:400;font-size:13px;color:var(--text-dim)"></span></h3>
+                <div class="form-section download-module download-sync-module">
+                    <div class="download-list-toolbar">
+                        <h3>${t('syncSettings')}</h3>
+                    </div>
+                    <div class="field-help" style="margin-bottom:8px">${t('listSyncHelp')}</div>
+                    <div id="dl_list_items" class="download-sync-box"></div>
+                    <div class="download-list-tools" style="margin-top:10px">
+                        <button class="btn btn-primary" onclick="syncSelectedOrAllLists()" id="btnSyncAll">${t('syncAllLists')}</button>
+                        <button class="btn btn-secondary" onclick="addListSyncItem()" id="btnAddList">${t('addList')}</button>
+                        <button class="btn btn-danger" onclick="deleteSelectedListSyncItems()" id="btnDeleteSelectedLists">${t('deleteSelectedLists')}</button>
+                    </div>
+                    <div id="dlSyncResult" style="margin-top:8px;font-size:13px;color:var(--text-dim)"></div>
+                </div>
+                <div class="form-section download-module download-users-module">
+                    <div class="download-list-toolbar">
+                        <h3>${t('userListTitle')} <span id="dlUserCount" style="font-weight:400;font-size:13px;color:var(--text-dim)"></span></h3>
+                    </div>
+                    <div class="download-list-summary" id="dlListSummary">
+                        <div class="queue-chip"><span>${t('userCount')}</span><strong id="sumUsers">0</strong></div>
+                        <div class="queue-chip"><span>${t('duplicateCount')}</span><strong id="sumDuplicates">0</strong></div>
+                        <div class="queue-chip"><span>${t('enabledListCount')}</span><strong id="sumLists">0</strong></div>
+                        <div class="queue-chip"><span>${t('lastSync')}</span><strong id="sumLastSync">--</strong></div>
+                    </div>
                     <div class="download-user-grid">
                         <div class="form-group"><label>${t('bulkAddUsers')}</label><textarea id="dl_user_bulk_add" placeholder="openai&#10;github&#10;elonmusk"></textarea></div>
-                        <div class="form-group"><label>${t('syncSettings')}</label><div class="field-help">${t('listSyncHelp')}</div><div id="dl_list_items"></div></div>
                     </div>
-                    <div class="download-side-actions" style="margin-bottom:10px">
+                    <div class="download-list-tools">
                         <button class="btn btn-secondary" onclick="applyBulkUsers()">${t('addUsers')}</button>
                         <button class="btn btn-secondary" onclick="downloadUserList()">${t('downloadUserList')}</button>
                         <button class="btn btn-secondary" onclick="dedupeUsers()">${t('dedupeUsers')}</button>
                         <button class="btn btn-danger" onclick="pruneUnavailableUsers()">${t('pruneUnavailableUsers')}</button>
-                        <button class="btn btn-primary" onclick="syncAllLists()" id="btnSyncAll">${t('syncAllLists')}</button>
                     </div>
-                    <div id="dl_user_table" class="compact-list" style="height:220px;overflow:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px"></div>
-                    <div id="dlSyncResult" style="margin-top:8px;font-size:13px;color:var(--text-dim)"></div>
+                    <div class="field-help" style="margin-bottom:8px">${t('listWorkspaceHint')}</div>
+                    <div class="download-fill">
+                        <div id="dl_user_table" class="compact-list download-user-table"></div>
+                        <div class="download-user-pager" id="dl_user_pager">
+                            <div class="media-meta" id="downloadUsersPagerText">--</div>
+                            <div class="media-pager-controls">
+                                <button class="btn btn-secondary pager-step" onclick="downloadUserListStepPage(-5)">${t('previousFivePages')}</button>
+                                <button class="btn btn-secondary" onclick="downloadUserListStepPage(-1)">${t('previousPage')}</button>
+                                <label class="media-page-jump">${t('pageLabel')}
+                                    <input id="downloadUsersPageJump" type="number" min="1" value="1" onkeydown="if(event.key==='Enter')downloadUserListJumpToPage()">
+                                </label>
+                                <button class="btn btn-secondary" onclick="downloadUserListJumpToPage()">${t('jumpPage')}</button>
+                                <button class="btn btn-secondary" onclick="downloadUserListStepPage(1)">${t('nextPage')}</button>
+                                <button class="btn btn-secondary pager-step" onclick="downloadUserListStepPage(5)">${t('nextFivePages')}</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="download-live-panel">
@@ -1967,6 +2259,8 @@ function initDownloadTab() {
                         <button class="btn btn-primary" onclick="startDownload()" id="btnStartDl">${t('startDownload')}</button>
                         <button class="btn btn-secondary" onclick="pauseDownload()" id="btnPauseDl" style="display:none">${t('pauseDownload')}</button>
                         <button class="btn btn-danger" onclick="terminateDownload()" id="btnTerminateDl">${t('terminateDownload')}</button>
+                        <label class="auto-shutdown-toggle"><input type="checkbox" id="dl_auto_shutdown"> <span>${t('autoShutdownAfterDownload')}</span></label>
+                        <div class="auto-shutdown-hint">${t('autoShutdownHint')}</div>
                     </div>
                     <div>
                         <div class="progress-bar-wrap" style="margin-bottom:6px"><div class="progress-bar-fill" id="dlProgress" style="width:0%"></div></div>
@@ -1982,6 +2276,10 @@ function initDownloadTab() {
                 </div>
                 <div class="download-log" id="dlLog"></div>
                 <div id="dlStatsResult" style="font-size:14px"></div>
+                <div class="download-history-card">
+                    <div class="download-history-title"><span>${t('recentDownloads')}</span><span style="color:var(--text-dim);font-weight:600">3</span></div>
+                    <div id="dlHistory">${renderDownloadHistory([])}</div>
+                </div>
             </div>
         </div>
     </div>`;
@@ -1992,6 +2290,7 @@ function initDownloadTab() {
         listSyncItems = normalizeListSyncItems(cfg.list_sync);
         renderListSyncItems();
     });
+    loadDownloadHistory();
 }
 
 function normalizeUsers(input) {
@@ -2011,24 +2310,73 @@ function normalizeUsers(input) {
 function renderUserListManager() {
     const el = document.getElementById('dl_user_table');
     if (!el) return;
-    el.innerHTML = downloadUsers.length ? downloadUsers.map(u => '<div class="compact-row"><div><div class="compact-title">@' + esc(u) + '</div></div><button class="btn btn-secondary" onclick="removeUserFromList(\'' + esc(u) + '\')">×</button></div>').join('') : '<div class="empty-state">' + t('noMatchingUsers') + '</div>';
+    downloadUserListTotalPages = Math.max(1, Math.ceil((downloadUsers || []).length / downloadUserListPerPage));
+    downloadUserListPage = Math.max(1, Math.min(downloadUserListTotalPages, downloadUserListPage || 1));
+    const start = (downloadUserListPage - 1) * downloadUserListPerPage;
+    const pageUsers = (downloadUsers || []).slice(start, start + downloadUserListPerPage);
+    el.innerHTML = pageUsers.length ? pageUsers.map(u => '<div class="compact-row"><div><div class="compact-title">@' + esc(u) + '</div></div><button class="btn btn-secondary" onclick="removeUserFromList(\'' + jsEscape(u) + '\')">×</button></div>').join('') : '<div class="empty-state">' + t('noMatchingUsers') + '</div>';
+    const pagerText = document.getElementById('downloadUsersPagerText');
+    if (pagerText) pagerText.textContent = t('pageOf', {page: downloadUserListPage, total: downloadUserListTotalPages});
+    const jump = document.getElementById('downloadUsersPageJump');
+    if (jump) {
+        jump.max = String(downloadUserListTotalPages);
+        jump.value = String(downloadUserListPage);
+    }
     updateUserCount();
+}
+
+function downloadUserListStepPage(delta) {
+    downloadUserListPage = Math.max(1, Math.min(downloadUserListTotalPages || 1, (downloadUserListPage || 1) + delta));
+    renderUserListManager();
+}
+
+function downloadUserListJumpToPage() {
+    const input = document.getElementById('downloadUsersPageJump');
+    const raw = parseInt(input && input.value, 10);
+    downloadUserListPage = Math.max(1, Math.min(downloadUserListTotalPages || 1, raw || 1));
+    renderUserListManager();
 }
 
 function updateUserCount() {
     const el = document.getElementById('dlUserCount');
     if (el) el.textContent = '(' + downloadUsers.length + ' ' + t('userCount') + ')';
+    updateDownloadListSummary();
+}
+
+function countDuplicateUsers(users) {
+    const seen = new Set();
+    let duplicates = 0;
+    (users || []).forEach(user => {
+        const key = String(user || '').trim().replace(/^@/, '').toLowerCase();
+        if (!key) return;
+        if (seen.has(key)) duplicates += 1;
+        seen.add(key);
+    });
+    return duplicates;
+}
+
+function updateDownloadListSummary() {
+    const usersEl = document.getElementById('sumUsers');
+    const dupEl = document.getElementById('sumDuplicates');
+    const listsEl = document.getElementById('sumLists');
+    const syncEl = document.getElementById('sumLastSync');
+    if (usersEl) usersEl.textContent = String((downloadUsers || []).length);
+    if (dupEl) dupEl.textContent = String(countDuplicateUsers(downloadUsers));
+    if (listsEl) listsEl.textContent = String((listSyncItems || []).filter(item => !item._draft && (item.list_url || item.list_id || item.list_owner || item.list_slug)).length);
+    if (syncEl) syncEl.textContent = window._lastListSyncText || t('notSyncedYet');
 }
 
 function applyBulkUsers() {
     const ta = document.getElementById('dl_user_bulk_add');
     downloadUsers = normalizeUsers(downloadUsers.concat(normalizeUsers(ta.value)));
+    downloadUserListPage = 1;
     ta.value = '';
     renderUserListManager();
 }
 
 function dedupeUsers() {
     downloadUsers = normalizeUsers(downloadUsers);
+    downloadUserListPage = 1;
     renderUserListManager();
 }
 
@@ -2055,18 +2403,56 @@ function normalizeListSyncItems(listSync) {
     if (!items.length && (listSync?.list_id || listSync?.list_owner || listSync?.list_slug)) {
         items.push({name: '', list_id: listSync.list_id || '', list_owner: listSync.list_owner || '', list_slug: listSync.list_slug || '', enabled: listSync.enabled !== false});
     }
-    return items.length ? items.map(item => ({name: item.name || '', list_id: item.list_id || '', list_owner: item.list_owner || '', list_slug: item.list_slug || '', enabled: item.enabled !== false})) : [{name: '', list_id: '', list_owner: '', list_slug: '', enabled: true}];
+    return items.map(item => {
+        const listUrl = item.list_url || item.list_id || (item.list_owner && item.list_slug ? item.list_owner + '/lists/' + item.list_slug : '');
+        return {name: item.name || '', list_url: listUrl, list_id: item.list_id || '', list_owner: item.list_owner || '', list_slug: item.list_slug || '', enabled: item.enabled !== false, _draft: false};
+    });
 }
 
 function renderListSyncItems() {
     const box = document.getElementById('dl_list_items');
     if (!box) return;
-    box.innerHTML = listSyncItems.map((item, idx) => `
-        <div class="form-section" style="border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:10px">
-            <div class="form-row"><div class="form-group"><label>${t('listName')}</label><input data-list-field="name" data-list-index="${idx}" value="${esc(item.name)}" placeholder="AI list"></div><div class="form-group"><label>${t('listId')}</label><input data-list-field="list_id" data-list-index="${idx}" value="${esc(item.list_id)}" placeholder="1234567890"></div></div>
-            <div class="form-row"><div class="form-group"><label>${t('listOwner')}</label><input data-list-field="list_owner" data-list-index="${idx}" value="${esc(item.list_owner)}" placeholder="owner"></div><div class="form-group"><label>${t('listSlug')}</label><input data-list-field="list_slug" data-list-index="${idx}" value="${esc(item.list_slug)}" placeholder="favorites"></div></div>
-            <div class="download-actions"><label><input type="checkbox" data-list-field="enabled" data-list-index="${idx}" ${item.enabled ? 'checked' : ''}> ${t('enabled')}</label><button class="btn btn-primary" onclick="startSync(${idx})">${t('syncList')}</button><button class="btn btn-secondary" onclick="removeListSyncItem(${idx})">${t('remove')}</button></div>
-        </div>`).join('');
+    box.innerHTML = '<div class="list-sync-table"><div class="list-sync-head"><span></span><span>' + t('listName') + '</span><span>' + t('listUrl') + '</span><span>' + t('listParsed') + '</span><span>Status</span><span></span></div>'
+        + (listSyncItems.length ? listSyncItems.map(renderListSyncRow).join('') : '<div class="empty-state">' + t('listSyncHelp') + '</div>')
+        + '</div>';
+    Object.keys(listSyncStatuses).forEach(idx => {
+        const status = listSyncStatuses[idx];
+        setListSyncStatus(parseInt(idx), status.state, status.message, false);
+    });
+    updateDownloadListSummary();
+}
+
+function renderListSyncRow(item, idx) {
+    const action = item._draft
+        ? '<button class="btn btn-primary" onclick="completeListSyncItem(' + idx + ')">' + t('completeList') + '</button>'
+        : '<button class="btn btn-primary" onclick="startSync(' + idx + ')">' + t('syncList') + '</button>';
+    const selector = item._draft ? '<span></span>' : '<input type="checkbox" data-list-select data-list-index="' + idx + '">';
+    const parsed = parseListReference(item.list_url || item.list_id || '');
+    return '<div class="list-sync-item" data-list-sync-index="' + idx + '"><div class="list-sync-row-grid">'
+        + '<div>' + selector + '</div>'
+        + '<input type="text" data-list-field="name" data-list-index="' + idx + '" value="' + esc(item.name) + '" placeholder="AI list">'
+        + '<input type="text" data-list-field="list_url" data-list-index="' + idx + '" value="' + esc(item.list_url || '') + '" placeholder="https://x.com/i/lists/1234567890">'
+        + '<div class="compact-meta">' + esc(parsed.label || '-') + '</div>'
+        + '<div class="list-sync-status" id="listSyncStatus_' + idx + '">' + t('syncStatusIdle') + '</div>'
+        + '<div class="list-sync-row-actions">' + action + '</div>'
+        + '</div></div>';
+}
+
+function renderListSyncError(message) {
+    return '<span>' + esc(message || t('syncStatusFailed')) + '</span>';
+}
+
+function setListSyncStatus(index, state, message, remember = true) {
+    const normalized = state || 'idle';
+    if (remember) listSyncStatuses[index] = {state: normalized, message: message || ''};
+    const el = document.getElementById('listSyncStatus_' + index);
+    if (!el) return;
+    el.className = 'list-sync-status ' + normalized;
+    const label = normalized === 'running' ? t('syncStatusRunning')
+        : normalized === 'success' ? t('syncStatusSuccess')
+        : normalized === 'failed' ? t('syncStatusFailed')
+        : t('syncStatusIdle');
+    el.innerHTML = message && normalized === 'failed' ? label + ': ' + renderListSyncError(message) : label + (message ? ' · ' + esc(message) : '');
 }
 
 function collectListSyncItems() {
@@ -2074,28 +2460,153 @@ function collectListSyncItems() {
     document.querySelectorAll('[data-list-field]').forEach(el => {
         const idx = parseInt(el.dataset.listIndex);
         const field = el.dataset.listField;
-        next[idx][field] = field === 'enabled' ? el.checked : el.value.trim();
+        if (!next[idx]) return;
+        next[idx][field] = el.value.trim();
     });
-    listSyncItems = next.filter(item => item.list_id || item.list_owner || item.list_slug || item.name);
-    if (!listSyncItems.length) listSyncItems = [{name: '', list_id: '', list_owner: '', list_slug: '', enabled: true}];
+    listSyncItems = next.filter(item => item._draft || item.list_url || item.list_id || item.list_owner || item.list_slug || item.name);
+    updateDownloadListSummary();
     return listSyncItems;
 }
 
 function addListSyncItem() {
     collectListSyncItems();
-    listSyncItems.push({name: '', list_id: '', list_owner: '', list_slug: '', enabled: true});
+    listSyncItems.push({name: '', list_url: '', list_id: '', list_owner: '', list_slug: '', enabled: true, _draft: true});
     renderListSyncItems();
+}
+
+async function completeListSyncItem(index) {
+    collectListSyncItems();
+    const item = listSyncItems[index];
+    if (!isListSyncReady(item)) {
+        setListSyncStatus(index, 'failed', t('fillListId'));
+        return;
+    }
+    item._draft = false;
+    item.enabled = true;
+    setListSyncStatus(index, 'idle', '');
+    renderListSyncItems();
+    await saveDownloadSettings();
+}
+
+function parseListReference(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return {list_id: '', list_owner: '', list_slug: '', label: ''};
+    const idMatch = raw.match(/(?:\/i\/lists\/|^)(\d+)(?:\D*$|$)/);
+    if (idMatch) return {list_id: idMatch[1], list_owner: '', list_slug: '', label: 'ID ' + idMatch[1]};
+    const cleaned = raw.replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, '').replace(/^@/, '').replace(/\/$/, '');
+    const parts = cleaned.split('/').filter(Boolean);
+    if (parts.length >= 3 && parts[1] === 'lists') {
+        return {list_id: '', list_owner: parts[0].replace(/^@/, ''), list_slug: parts[2], label: '@' + parts[0].replace(/^@/, '') + '/' + parts[2]};
+    }
+    if (parts.length >= 2) {
+        return {list_id: '', list_owner: parts[0].replace(/^@/, ''), list_slug: parts[parts.length - 1], label: '@' + parts[0].replace(/^@/, '') + '/' + parts[parts.length - 1]};
+    }
+    return {list_id: raw, list_owner: '', list_slug: '', label: raw};
+}
+
+function buildListSyncPayload(item) {
+    const parsed = parseListReference(item?.list_url || item?.list_id || '');
+    return {
+        list_url: String(item?.list_url || item?.list_id || '').trim(),
+        list_id: parsed.list_id,
+        list_owner: parsed.list_owner,
+        list_slug: parsed.list_slug,
+    };
+}
+
+function isListSyncReady(item) {
+    const payload = buildListSyncPayload(item);
+    return !!(payload.list_id || (payload.list_owner && payload.list_slug));
+}
+
+function parseListImportLine(line) {
+    const value = String(line || '').trim();
+    if (!value) return null;
+    if (value.includes('/')) {
+        const parts = value.replace(/^https?:\/\/(x|twitter)\.com\//, '').split('/').filter(Boolean);
+        if (parts.length >= 2) {
+            return {name: parts.slice(-2).join('/'), list_url: value, list_id: '', list_owner: parts[parts.length - 2], list_slug: parts[parts.length - 1], enabled: true};
+        }
+    }
+    const commaParts = value.split(',').map(s => s.trim()).filter(Boolean);
+    if (commaParts.length >= 2) {
+        return {name: commaParts[0], list_url: commaParts[1], list_id: '', list_owner: '', list_slug: '', enabled: true};
+    }
+    return {name: '', list_url: value, list_id: '', list_owner: '', list_slug: '', enabled: true};
+}
+
+function bulkImportLists() {
+    const ta = document.getElementById('dl_list_bulk_import');
+    const imported = (ta?.value || '').split('\n').map(parseListImportLine).filter(Boolean);
+    if (!imported.length) return;
+    const existing = collectListSyncItems().filter(item => item.list_url || item.list_id || item.list_owner || item.list_slug || item.name);
+    const seen = new Set();
+    listSyncItems = existing.concat(imported).filter(item => {
+        const key = [item.list_url, item.list_id, item.list_owner, item.list_slug, item.name].map(v => String(v || '').toLowerCase()).join('|');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+    ta.value = '';
+    renderListSyncItems();
+    toast(t('settingsSaved'));
 }
 
 function removeListSyncItem(index) {
     collectListSyncItems();
     listSyncItems.splice(index, 1);
-    if (!listSyncItems.length) listSyncItems.push({name: '', list_id: '', list_owner: '', list_slug: '', enabled: true});
+    delete listSyncStatuses[index];
+    listSyncStatuses = Object.keys(listSyncStatuses).reduce((acc, key) => {
+        const oldIndex = parseInt(key);
+        acc[oldIndex > index ? oldIndex - 1 : oldIndex] = listSyncStatuses[key];
+        return acc;
+    }, {});
+    if (!listSyncItems.length) {
+        listSyncItems.push({name: '', list_url: '', list_id: '', list_owner: '', list_slug: '', enabled: true});
+        listSyncStatuses = {};
+        toast(t('settingsSaved'));
+    }
     renderListSyncItems();
 }
 
+function getSelectedListSyncIndexes() {
+    return Array.from(document.querySelectorAll('[data-list-select]:checked')).map(el => parseInt(el.dataset.listIndex)).filter(idx => Number.isInteger(idx));
+}
+
+function getSelectedOrAllListSyncItems() {
+    collectListSyncItems();
+    const selected = getSelectedListSyncIndexes();
+    const indexes = selected.length ? selected : listSyncItems.map((_, idx) => idx);
+    return indexes
+        .filter(idx => listSyncItems[idx] && !listSyncItems[idx]._draft && isListSyncReady(listSyncItems[idx]))
+        .map(idx => ({idx, item: listSyncItems[idx]}));
+}
+
+async function deleteSelectedListSyncItems() {
+    collectListSyncItems();
+    const selected = getSelectedListSyncIndexes().filter(idx => listSyncItems[idx] && !listSyncItems[idx]._draft);
+    if (!selected.length) {
+        toast(t('deleteSelectedListsNone'), 'error');
+        return;
+    }
+    if (!confirm(t('deleteSelectedListsConfirm', {count: selected.length}))) return;
+    const typed = prompt(t('deleteSelectedListsPrompt'));
+    if (typed !== t('deleteConfirmKeyword')) return;
+    selected.sort((a, b) => b - a).forEach(idx => {
+        listSyncItems.splice(idx, 1);
+        delete listSyncStatuses[idx];
+    });
+    listSyncStatuses = {};
+    renderListSyncItems();
+    await saveDownloadSettings();
+    toast(t('selectedListsDeleted', {count: selected.length}));
+}
+
 async function saveDownloadSettings() {
-    const lists = collectListSyncItems();
+    const lists = collectListSyncItems().filter(item => !item._draft).map(item => {
+        const parsed = parseListReference(item.list_url || item.list_id || '');
+        return {...item, list_url: item.list_url || item.list_id || '', list_id: parsed.list_id, list_owner: parsed.list_owner, list_slug: parsed.list_slug};
+    });
     const payload = {
         user_list: downloadUsers,
         'list_sync.enabled': lists.some(item => item.enabled !== false),
@@ -2132,7 +2643,10 @@ async function startDownload() {
     const r = await fetch('/api/download/start', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({users: users})
+        body: JSON.stringify({
+            users: users,
+            auto_shutdown: !!document.getElementById('dl_auto_shutdown')?.checked
+        })
     });
     const d = await r.json();
     if (d.error) { toast(d.error, 'error'); return; }
@@ -2148,68 +2662,110 @@ async function startDownload() {
     toast(t('downloadStarted'));
 }
 
+function loadDownloadHistory() {
+    safeFetch('/api/download/status').then(r => r.json()).then(s => {
+        updateDownloadHistory(s.history || []);
+    }).catch(() => updateDownloadHistory([]));
+}
+
 async function startSync(index) {
     const lists = collectListSyncItems();
     const item = lists[index] || {};
-    const listId = (item.list_id || '').trim();
-    if (!listId) { toast(t('fillListId'), 'error'); return; }
+    if (!isListSyncReady(item)) {
+        setListSyncStatus(index, 'failed', t('fillListId'));
+        toast(t('fillListId'), 'error');
+        return;
+    }
+    const payload = buildListSyncPayload(item);
     await saveDownloadSettings();
     try {
+        setListSyncStatus(index, 'running');
         const r = await fetch('/api/download/sync', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({list_id: listId})
+            body: JSON.stringify(payload)
         });
         const d = await r.json();
-        if (d.error) { toast(d.error, 'error'); return; }
+        if (d.error) {
+            setListSyncStatus(index, 'failed', d.error);
+            toast(d.error, 'error');
+            return;
+        }
+        document.getElementById('dlLog').textContent += '\n' + t('listSyncHeader') + '\n';
+        document.getElementById('dlSyncResult').textContent = '';
+        document.getElementById('dlProgress').style.width = '0%';
+        syncLogCount = 0;
+        if (syncPolling) clearInterval(syncPolling);
+        if (downloadPolling) clearInterval(downloadPolling);
+        toast(t('syncStarted'));
+        await waitForSyncCompletion();
+        setListSyncStatus(index, 'success');
     } catch(e) {
+        setListSyncStatus(index, 'failed', e.message);
         toast(t('syncRequestFailed') + e.message, 'error');
         return;
     }
-    document.getElementById('dlLog').textContent += '\n' + t('listSyncHeader') + '\n';
-    document.getElementById('dlSyncResult').textContent = '';
-    document.getElementById('dlProgress').style.width = '0%';
-    syncLogCount = 0;
-    if (syncPolling) clearInterval(syncPolling);
-    if (downloadPolling) clearInterval(downloadPolling);
-    syncPolling = setInterval(pollSyncStatus, 1000);
-    toast(t('syncStarted'));
 }
 
 async function syncAllLists() {
-    const lists = collectListSyncItems().filter(item => item.enabled !== false && item.list_id);
-    if (!lists.length) { toast(t('fillListId'), 'error'); return; }
+    return syncSelectedOrAllLists();
+}
+
+async function syncSelectedOrAllLists() {
+    const targets = getSelectedOrAllListSyncItems();
+    if (!targets.length) { toast(t('fillListId'), 'error'); return; }
     const btn = document.getElementById('btnSyncAll');
     if (btn) btn.disabled = true;
-    for (const item of lists) {
+    const originalText = btn ? btn.textContent : '';
+    if (btn) btn.textContent = t('syncStarted');
+    try {
         await saveDownloadSettings();
-        document.getElementById('dlLog').textContent += '\n' + t('listSyncHeader') + ' ' + (item.name || item.list_id) + '\n';
-        try {
+        for (const target of targets) {
+            const idx = target.idx;
+            const item = target.item;
+            const log = document.getElementById('dlLog');
+            if (log) {
+                log.textContent += '\n' + t('listSyncHeader') + ' ' + (item.name || item.list_id) + '\n';
+                log.scrollTop = log.scrollHeight;
+            }
+            setListSyncStatus(idx, 'running');
             const r = await fetch('/api/download/sync', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({list_id: item.list_id})
+                body: JSON.stringify(buildListSyncPayload(item))
             });
             const d = await r.json();
             if (d.error) {
+                setListSyncStatus(idx, 'failed', d.error);
                 toast(d.error, 'error');
                 continue;
             }
             await waitForSyncCompletion();
-        } catch(e) {
-            toast(t('syncRequestFailed') + e.message, 'error');
+            setListSyncStatus(idx, 'success');
+        }
+        window._lastListSyncText = new Date().toLocaleTimeString();
+        updateDownloadListSummary();
+        fetch('/api/config').then(r=>r.json()).then(cfg => {
+            downloadUsers = normalizeUsers(cfg.user_list || []);
+            renderUserListManager();
+        });
+        toast(t('syncComplete'));
+    } catch(e) {
+        const current = listSyncItems.findIndex((item, idx) => listSyncStatuses[idx]?.state === 'running');
+        if (current >= 0) setListSyncStatus(current, 'failed', e.message);
+        toast(t('syncRequestFailed') + e.message, 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = originalText || t('syncAllLists');
         }
     }
-    if (btn) btn.disabled = false;
-    fetch('/api/config').then(r=>r.json()).then(cfg => {
-        downloadUsers = normalizeUsers(cfg.user_list || []);
-        renderUserListManager();
-    });
-    toast(t('syncComplete'));
 }
 
 function waitForSyncCompletion() {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+        const startedAt = Date.now();
+        const syncTimeoutMs = 180000;
         const tick = () => {
             safeFetch('/api/download/sync_status').then(r=>r.json()).then(s => {
                 const log = document.getElementById('dlLog');
@@ -2217,9 +2773,10 @@ function waitForSyncCompletion() {
                     log.textContent = (s.logs || []).join('\n');
                     log.scrollTop = log.scrollHeight;
                 }
-                if (!s.running) resolve();
+                if (!s.running) resolve(s);
+                else if (Date.now() - startedAt > syncTimeoutMs) reject(new Error('sync timeout'));
                 else setTimeout(tick, 1000);
-            }).catch(() => resolve());
+            }).catch(reject);
         };
         tick();
     });
@@ -2238,6 +2795,8 @@ function pollSyncStatus() {
             clearInterval(syncPolling);
             syncPolling = null;
             syncLogCount = 0;
+            window._lastListSyncText = new Date().toLocaleTimeString();
+            updateDownloadListSummary();
             const result = document.getElementById('dlSyncResult');
             const nu = s.new_users||[];
             if (nu.length) {
@@ -2276,6 +2835,7 @@ async function terminateDownload() {
 function pollDownloadStatus() {
     safeFetch('/api/download/status').then(r => r.json()).then(s => {
         updateQueuePanel(s);
+        updateDownloadHistory(s.history || []);
         document.getElementById('dlProgress').style.width = s.total ? (s.current/s.total*100)+'%' : '0%';
         const log = document.getElementById('dlLog');
         log.textContent = (s.logs||[]).join('\n');
@@ -2301,6 +2861,8 @@ function pollDownloadStatus() {
             }
             if (s.paused || s.state === 'paused') toast(t('downloadPaused'));
             else if (s.terminated || s.state === 'terminated') toast(t('downloadTerminated'));
+            else if (s.failed || s.state === 'failed') toast(t('downloadFailed'), 'error');
+            else if (s.shutdown_scheduled) toast(t('shutdownScheduled'));
             else toast(t('downloadComplete'));
         }
     });
@@ -2332,7 +2894,10 @@ function zh(s) {
         tokenHelp: '&#x7528;&#x4e8e;&#x8bbf;&#x95ee; X Web API&#xff0c;&#x901a;&#x5e38;&#x548c; Cookie &#x6765;&#x81ea;&#x540c;&#x4e00;&#x4e2a;&#x6d4f;&#x89c8;&#x5668;&#x4f1a;&#x8bdd;&#x3002;',
         usersHelp: '&#x6bcf;&#x884c;&#x4e00;&#x4e2a;&#x7528;&#x6237;&#x540d;&#xff0c;&#x4e0d;&#x9700;&#x8981;&#x52a0; @&#x3002;&#x4fdd;&#x5b58;&#x540e;&#x4e0b;&#x8f7d;&#x9875;&#x4f1a;&#x8bfb;&#x53d6;&#x540c;&#x4e00;&#x4efd;&#x5217;&#x8868;&#x3002;',
         proxyHelp: '&#x4e0d;&#x7528;&#x4ee3;&#x7406;&#x53ef;&#x4ee5;&#x7559;&#x7a7a;&#x3002;&#x652f;&#x6301; http&#x3001;https&#x3001;socks5&#x3001;socks5h&#x3002;',
-        logPlaceholder: '&#x7559;&#x7a7a;&#x5219;&#x4e0d;&#x5199;&#x65e5;&#x5fd7;&#x6587;&#x4ef6;'
+        logPlaceholder: '&#x7559;&#x7a7a;&#x5219;&#x4e0d;&#x5199;&#x65e5;&#x5fd7;&#x6587;&#x4ef6;',
+        softwareUpdate: '&#x8f6f;&#x4ef6;&#x66f4;&#x65b0;', updateHelp: '&#x68c0;&#x67e5; GitHub Releases &#x91cc;&#x7684;&#x6700;&#x65b0;&#x5b89;&#x88c5;&#x5305;&#x3002;&#x5b89;&#x88c5;&#x7248;&#x8986;&#x76d6;&#x5230;&#x539f;&#x8def;&#x5f84;&#x65f6;&#xff0c;&#x4f1a;&#x4fdd;&#x7559;&#x5f53;&#x524d; config.json &#x548c;&#x4e0b;&#x8f7d;&#x8fdb;&#x5ea6;&#x3002;',
+        sourceUpdateHelp: '&#x5f53;&#x524d;&#x662f;&#x6e90;&#x7801;&#x8fd0;&#x884c;&#x6a21;&#x5f0f;&#x3002;&#x8f6f;&#x4ef6;&#x4e0d;&#x4f1a;&#x76f4;&#x63a5;&#x6539;&#x5199;&#x6e90;&#x7801;&#x76ee;&#x5f55;&#xff1b;&#x8bf7;&#x6253;&#x5f00; GitHub Release &#x4e0b;&#x8f7d;&#x65b0;&#x6e90;&#x7801;&#xff0c;&#x6216;&#x5728;&#x4ed3;&#x5e93;&#x4e2d;&#x6267;&#x884c; git pull&#x3002;',
+        checkUpdate: '&#x68c0;&#x67e5;&#x66f4;&#x65b0;', checkingUpdate: '&#x6b63;&#x5728;&#x68c0;&#x67e5;&#x66f4;&#x65b0;...', latestVersion: '&#x5f53;&#x524d;&#x5df2;&#x662f;&#x6700;&#x65b0;&#x7248;&#x672c;', updateAvailable: '&#x53d1;&#x73b0;&#x65b0;&#x7248;&#x672c;', downloadInstaller: '&#x4e0b;&#x8f7d;&#x5b89;&#x88c5;&#x5305;', downloadingInstaller: '&#x6b63;&#x5728;&#x4e0b;&#x8f7d;&#x5b89;&#x88c5;&#x5305;...', installerReady: '&#x5b89;&#x88c5;&#x5305;&#x5df2;&#x4e0b;&#x8f7d;', openInstaller: '&#x6253;&#x5f00;&#x5b89;&#x88c5;&#x5305;', openRelease: '&#x6253;&#x5f00; GitHub Release', updateCheckFailed: '&#x66f4;&#x65b0;&#x68c0;&#x67e5;&#x5931;&#x8d25;', updateDownloadFailed: '&#x5b89;&#x88c5;&#x5305;&#x4e0b;&#x8f7d;&#x5931;&#x8d25;', closeAppBeforeInstall: '&#x6253;&#x5f00;&#x5b89;&#x88c5;&#x5305;&#x540e;&#xff0c;&#x8bf7;&#x5173;&#x95ed;&#x5f53;&#x524d;&#x8f6f;&#x4ef6;&#x518d;&#x7ee7;&#x7eed;&#x5b89;&#x88c5;&#xff0c;&#x5b89;&#x88c5;&#x8def;&#x5f84;&#x9009;&#x539f;&#x8def;&#x5f84;&#x5373;&#x53ef;&#x65e0;&#x635f;&#x5347;&#x7ea7;&#x3002;'
     };
     if (appLanguage === 'en') {
         var en = {
@@ -2408,7 +2973,22 @@ function zh(s) {
             tokenHelp: 'Used to access the X Web API. It should come from the same browser session as the Cookie.',
             usersHelp: 'One username per line, without @. The download tab reads the same list after saving.',
             proxyHelp: 'Leave empty if you do not use a proxy. Supports http, https, socks5, and socks5h.',
-            logPlaceholder: 'Leave empty to disable log file output'
+            logPlaceholder: 'Leave empty to disable log file output',
+            softwareUpdate: 'Software Update',
+            updateHelp: 'Check the latest installer from GitHub Releases. Installed builds can upgrade over the current folder while preserving config.json and download progress.',
+            sourceUpdateHelp: 'You are running from source. xDownloader will not rewrite this source folder; open the GitHub Release to download source code, or run git pull in your repository.',
+            checkUpdate: 'Check update',
+            checkingUpdate: 'Checking for updates...',
+            latestVersion: 'You are on the latest version',
+            updateAvailable: 'New version available',
+            downloadInstaller: 'Download installer',
+            downloadingInstaller: 'Downloading installer...',
+            installerReady: 'Installer downloaded',
+            openInstaller: 'Open installer',
+            openRelease: 'Open GitHub Release',
+            updateCheckFailed: 'Update check failed',
+            updateDownloadFailed: 'Installer download failed',
+            closeAppBeforeInstall: 'After opening the installer, close the current app and choose the existing install folder for a no-loss upgrade.'
         };
         return en[s] || s;
     }
@@ -2445,19 +3025,21 @@ async function initSettings() {
     container.innerHTML = '<div class="settings-layout">'
         + '<div class="setup-hero"><div><h2>' + zh('setupTitle') + '</h2><p>' + zh('setupCopy') + '</p></div><div class="setup-steps"><div class="setup-step"><strong>1</strong>' + zh('stepAccount') + '</div><div class="setup-step"><strong>2</strong>' + zh('stepPath') + '</div><div class="setup-step"><strong>3</strong>' + zh('stepDownload') + '</div></div></div>'
         + '<div id="cfgStatus" class="config-status"></div>'
-        + '<div class="settings-grid"><div class="settings-main">'
+        + '<div class="settings-grid"><div class="settings-column settings-main">'
         + '<div class="form-section"><h3>' + zh('account') + '</h3>'
         + '<div class="form-group"><label>Cookie</label><div class="secret-row"><textarea id="cfg_cookie" data-secret="1">' + esc(cfg.cookie || '') + '</textarea><button class="btn btn-secondary" onclick="clearSecretField(\'cfg_cookie\')">' + zh('replace') + '</button></div><div class="field-help">' + zh('cookieHelp') + '</div></div>'
         + '<div class="form-group"><label>Bearer Token</label><div class="secret-row"><textarea id="cfg_bearer_token" data-secret="1">' + esc(cfg.bearer_token || '') + '</textarea><button class="btn btn-secondary" onclick="clearSecretField(\'cfg_bearer_token\')">' + zh('replace') + '</button></div><div class="field-help">' + zh('tokenHelp') + '</div></div></div>'
         + '<div class="form-section"><h3>' + zh('network') + '</h3><div class="form-group"><label>' + zh('savePath') + '</label><div class="secret-row"><input id="cfg_save_path" value="' + esc(cfg.save_path || '') + '" placeholder="downloads"><button class="btn btn-secondary" type="button" onclick="pickSavePath()">' + zh('browseFolder') + '</button></div></div><div class="form-group"><label>' + zh('proxy') + '</label><input id="cfg_proxy" value="' + esc(cfg.proxy || '') + '" placeholder="http://127.0.0.1:7890"><div class="field-help">' + zh('proxyHelp') + '</div></div></div>'
-        + '</div><div class="settings-side">'
+        + '</div><div class="settings-column settings-side">'
         + '<div class="form-section"><h3>' + zh('options') + '</h3>'
         + '<div class="form-row"><div class="form-group"><label>' + zh('timeRange') + '</label><input id="cfg_time_start" type="date"></div><div class="form-group"><label>&nbsp;</label><input id="cfg_time_end" type="date"></div></div>'
         + '<div class="form-row"><div class="form-group"><label>' + zh('imageFormat') + '</label><select id="cfg_image_format"><option value="orig">orig</option><option value="jpg">jpg</option><option value="png">png</option></select></div><div class="form-group"><label>' + zh('concurrency') + '</label><input id="cfg_max_concurrent" type="number" min="1" max="32"></div></div>'
         + '<div class="download-options"><label><input type="checkbox" id="cfg_has_video"> ' + zh('video') + '</label><label><input type="checkbox" id="cfg_has_text"> ' + zh('textTweets') + '</label><label><input type="checkbox" id="cfg_has_retweet"> ' + zh('retweet') + '</label><label><input type="checkbox" id="cfg_has_highlights"> ' + zh('highlights') + '</label><label><input type="checkbox" id="cfg_has_likes"> ' + zh('likes') + '</label></div>'
         + '<div class="form-row"><div class="form-group"><label>' + zh('cache') + '</label><select id="cfg_enable_cache"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('asyncDownload') + '</label><select id="cfg_async_enabled"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
         + '<div class="form-group"><label>' + zh('downloadAutoSync') + '</label><select id="cfg_download_auto_sync"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
+        + '</div><div class="settings-column settings-advanced">'
         + '<div class="form-section"><h3>' + zh('advanced') + '</h3><div class="form-row"><div class="form-group"><label>' + zh('userRetries') + '</label><input id="cfg_max_user_retries" type="number" min="0"></div><div class="form-group"><label>' + zh('retryDelay') + '</label><input id="cfg_retry_delay" type="number" min="0"></div></div><div class="form-group"><label>' + zh('verboseLog') + '</label><select id="cfg_verbose"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('logFile') + '</label><input id="cfg_log_file" value="' + esc((cfg.logging && cfg.logging.log_file) || '') + '" placeholder="' + zh('logPlaceholder') + '"></div><div class="form-group"><label>' + zh('theme') + '</label><select id="cfg_theme" onchange="document.documentElement.dataset.theme=this.value"><option value="dark-glass">' + zh('darkTheme') + '</option><option value="magazine">' + zh('lightTheme') + '</option></select></div></div>'
+        + '<div class="form-section" id="softwareUpdate"><h3>' + zh('softwareUpdate') + '</h3><div class="field-help">' + zh('updateHelp') + '</div><div id="updateStatus" class="field-help" style="margin-top:10px"></div><div class="settings-actions" style="position:static;margin-top:10px;padding:0;background:transparent;flex-wrap:wrap"><button id="btnCheckUpdate" class="btn btn-secondary" type="button" onclick="checkForUpdates()">' + zh('checkUpdate') + '</button><button id="btnOpenRelease" class="btn btn-secondary" type="button" style="display:none" onclick="openLatestRelease()">' + zh('openRelease') + '</button><button id="btnDownloadUpdate" class="btn btn-primary" type="button" style="display:none" onclick="downloadLatestInstaller()">' + zh('downloadInstaller') + '</button><button id="btnOpenInstaller" class="btn btn-secondary" type="button" style="display:none" onclick="openDownloadedInstaller()">' + zh('openInstaller') + '</button></div></div>'
         + '</div></div><div class="settings-actions"><button class="btn btn-primary" onclick="saveSettings()">' + zh('applyConfig') + '</button><button class="btn btn-secondary" onclick="checkConfigNow()">' + zh('checkNow') + '</button><button class="btn btn-secondary" onclick="initSettings()">' + zh('reload') + '</button></div></div>';
 
     document.getElementById('cfg_theme').value = theme;
@@ -2571,6 +3153,107 @@ function buildSettingsTimeRange() {
         document.getElementById('cfg_time_end').value = end;
     }
     return start + ':' + end;
+}
+
+let latestUpdateInfo = null;
+let downloadedInstallerPath = '';
+
+function setUpdateStatus(message, type) {
+    const box = document.getElementById('updateStatus');
+    if (!box) return;
+    const color = type === 'error' ? 'var(--red)' : (type === 'success' ? 'var(--green)' : 'var(--text-dim)');
+    box.innerHTML = '<span style="color:' + color + '">' + esc(message || '') + '</span>';
+}
+
+async function checkForUpdates() {
+    const btn = document.getElementById('btnCheckUpdate');
+    const downloadBtn = document.getElementById('btnDownloadUpdate');
+    const openBtn = document.getElementById('btnOpenInstaller');
+    const releaseBtn = document.getElementById('btnOpenRelease');
+    latestUpdateInfo = null;
+    downloadedInstallerPath = '';
+    if (downloadBtn) downloadBtn.style.display = 'none';
+    if (openBtn) openBtn.style.display = 'none';
+    if (releaseBtn) releaseBtn.style.display = 'none';
+    if (btn) btn.disabled = true;
+    setUpdateStatus(plainZh('checkingUpdate'), '');
+    try {
+        const r = await fetch('/api/update/check');
+        const data = await r.json();
+        if (!r.ok || !data.ok) throw new Error(data.error || r.statusText);
+        latestUpdateInfo = data;
+        if (!data.update_available) {
+            setUpdateStatus(plainZh('latestVersion') + ' (' + (data.current_version || '') + ')', 'success');
+            toast(plainZh('latestVersion'));
+            return;
+        }
+        const title = plainZh('updateAvailable') + ': ' + data.latest_version;
+        const detail = data.installer_name ? ' / ' + data.installer_name : '';
+        if (data.runtime_mode === 'source' || !data.can_install_update) {
+            setUpdateStatus(title + ' · ' + plainZh('sourceUpdateHelp'), 'success');
+            if (releaseBtn && data.release_url) releaseBtn.style.display = '';
+        } else {
+            setUpdateStatus(title + detail, 'success');
+            if (downloadBtn && data.download_url) downloadBtn.style.display = '';
+        }
+        toast(title);
+    } catch(e) {
+        setUpdateStatus(plainZh('updateCheckFailed') + ': ' + e.message, 'error');
+        toast(plainZh('updateCheckFailed'), 'error');
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+function openLatestRelease() {
+    const url = latestUpdateInfo && latestUpdateInfo.release_url;
+    if (url) window.open(url, '_blank', 'noopener');
+}
+
+async function downloadLatestInstaller() {
+    if (!latestUpdateInfo || !latestUpdateInfo.download_url) {
+        await checkForUpdates();
+        if (!latestUpdateInfo || !latestUpdateInfo.download_url) return;
+    }
+    const btn = document.getElementById('btnDownloadUpdate');
+    const openBtn = document.getElementById('btnOpenInstaller');
+    if (btn) btn.disabled = true;
+    setUpdateStatus(plainZh('downloadingInstaller'), '');
+    try {
+        const r = await fetch('/api/update/download', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                download_url: latestUpdateInfo.download_url,
+                installer_name: latestUpdateInfo.installer_name
+            })
+        });
+        const data = await r.json();
+        if (!r.ok || !data.ok) throw new Error(data.error || r.statusText);
+        downloadedInstallerPath = data.file_path || '';
+        setUpdateStatus(plainZh('installerReady') + ': ' + downloadedInstallerPath, 'success');
+        if (openBtn) openBtn.style.display = '';
+        toast(plainZh('installerReady'));
+    } catch(e) {
+        setUpdateStatus(plainZh('updateDownloadFailed') + ': ' + e.message, 'error');
+        toast(plainZh('updateDownloadFailed'), 'error');
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+async function openDownloadedInstaller() {
+    if (!downloadedInstallerPath) return;
+    alert(plainZh('closeAppBeforeInstall'));
+    const r = await fetch('/api/update/open', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({file_path: downloadedInstallerPath})
+    });
+    const data = await r.json();
+    if (!r.ok || !data.ok) {
+        toast((data && data.error) || plainZh('updateDownloadFailed'), 'error');
+    }
 }
 
 async function saveSettings() {

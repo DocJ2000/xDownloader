@@ -1,33 +1,22 @@
 ---
 name: Feature request
-about: Suggest an improvement
+about: Suggest an improvement / 建议改进
 title: "[Feature] "
 labels: enhancement
 assignees: ""
 ---
 
-## Problem
+## Problem / 想解决的问题
 
 
-## Proposed solution
+## Proposed solution / 建议方案
 
 
-## Alternatives considered
+## Alternatives considered / 考虑过的替代方案
 
 
-## Extra context
+## Who would benefit? / 谁会受益？
 
 
----
-
-## 想解决的问题
-
-
-## 建议方案
-
-
-## 考虑过的替代方案
-
-
-## 其他信息
+## Extra context / 其他信息
 
