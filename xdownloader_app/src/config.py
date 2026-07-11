@@ -14,6 +14,14 @@ APP_DIR = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = Path(os.path.dirname(sys.executable)) if getattr(sys, "frozen", False) else APP_DIR.parent
 
 
+def _clamp_int(value: Any, default: int, minimum: int, maximum: int) -> int:
+    try:
+        parsed = int(float(value))
+    except (TypeError, ValueError):
+        parsed = default
+    return max(minimum, min(maximum, parsed))
+
+
 @dataclass
 class AppConfig:
     save_path: str
@@ -32,6 +40,7 @@ class AppConfig:
     async_enabled: bool
     enable_cache: bool
     auto_sync: bool
+    checkpoint_expire_hours: int
     verbose: bool
     log_file: str
     max_user_retries: int
@@ -124,6 +133,7 @@ def load_config(config_path: str = "config.json") -> AppConfig:
         async_enabled=download_cfg.get('async_enabled', True),
         enable_cache=download_cfg.get('enable_cache', True),
         auto_sync=download_cfg.get('auto_sync', False),
+        checkpoint_expire_hours=_clamp_int(download_cfg.get('checkpoint_expire_hours', 12), 12, 0, 168),
         verbose=logging_cfg.get('verbose', False),
         log_file=logging_cfg.get('log_file', ''),
         max_user_retries=retry_cfg.get('max_user_retries', 3),

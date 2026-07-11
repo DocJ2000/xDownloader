@@ -61,6 +61,7 @@ class IndexUiTest(unittest.TestCase):
             "cfg_has_highlights",
             "cfg_has_likes",
             "cfg_max_concurrent",
+            "cfg_checkpoint_expire_hours",
             "cfg_enable_cache",
             "cfg_async_enabled",
             "cfg_download_auto_sync",
@@ -71,6 +72,10 @@ class IndexUiTest(unittest.TestCase):
             self.assertIn(control_id, self.html)
         self.assertIn("buildSettingsTimeRange()", self.html)
         self.assertIn("setSettingsTimeRangeControls", self.html)
+        self.assertIn("checkpointExpireHours", self.html)
+        self.assertIn("checkpointHelp", self.html)
+        self.assertIn("This is resume state, not a cooldown", self.html)
+        self.assertIn("这是断点续传记录，不是下载冷却时间", self.html)
 
     def test_settings_use_apply_language(self):
         self.assertIn("applyConfig", self.html)

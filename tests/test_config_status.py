@@ -266,6 +266,11 @@ class ConfigStatusTest(unittest.TestCase):
         self.assertIn("has_text", cfg["mode"])
         self.assertTrue(cfg["mode"]["has_text"])
 
+    def test_checkpoint_expiry_defaults_to_twelve_hours(self):
+        cfg = server.default_config_data()
+
+        self.assertEqual(12, cfg["download"]["checkpoint_expire_hours"])
+
     def test_prune_users_preview_does_not_modify_config(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = os.path.join(temp_dir, "config.json")
@@ -321,6 +326,7 @@ class ConfigStatusTest(unittest.TestCase):
             self.assertEqual("D:/keep/downloads", migrated["save_path"])
             self.assertEqual(server.CURRENT_CONFIG_VERSION, migrated["config_version"])
             self.assertIn("download", migrated)
+            self.assertEqual(12, migrated["download"]["checkpoint_expire_hours"])
             self.assertEqual("12345", migrated["list_sync"]["lists"][0]["list_id"])
             self.assertTrue(os.path.exists(config_path + ".bak"))
             with open(config_path + ".bak", "r", encoding="utf-8") as f:

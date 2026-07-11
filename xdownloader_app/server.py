@@ -955,7 +955,8 @@ def default_config_data():
             "max_concurrent": 16,
             "async_enabled": True,
             "enable_cache": True,
-            "auto_sync": False
+            "auto_sync": False,
+            "checkpoint_expire_hours": 12
         },
         "list_sync": {
             "enabled": False,
@@ -999,6 +1000,21 @@ def _merge_missing_defaults(config_data, defaults):
             child_changed = _merge_missing_defaults(config_data[key], value)
             changed = changed or child_changed
     return changed
+
+
+def normalize_checkpoint_expire_hours(value, default=12):
+    try:
+        hours = int(float(value))
+    except (TypeError, ValueError):
+        hours = default
+    return max(0, min(168, hours))
+
+
+def get_checkpoint_expire_hours(config_data=None):
+    if config_data is None:
+        config_data = load_config_data()
+    download_cfg = (config_data or {}).get('download') or {}
+    return normalize_checkpoint_expire_hours(download_cfg.get('checkpoint_expire_hours', 12))
 
 
 def migrate_config_data(config_data):
@@ -1512,6 +1528,7 @@ def _run_download(users):
     import json as _json
     progress_file = download_progress_path()
     progress_total = len(users)
+    checkpoint_expire_hours = get_checkpoint_expire_hours()
 
     completed = set()
     if os.path.exists(progress_file):
@@ -1520,8 +1537,10 @@ def _run_download(users):
                 prog = _json.load(f)
             completed_at = prog.get('completed_at', 0)
             age_hours = (time.time() - completed_at) / 3600 if completed_at else 999
-            if age_hours > 12:
-                qlog.info(f"Checkpoint expired ({age_hours:.1f}h old), clearing")
+            if checkpoint_expire_hours <= 0 or age_hours > checkpoint_expire_hours:
+                line = time.strftime('[%H:%M:%S] ') + f"Checkpoint expired ({age_hours:.1f}h old), clearing"
+                queue_log.append(line)
+                download_state['logs'] = queue_log[-200:]
                 os.remove(progress_file)
             else:
                 completed = set(prog.get('completed', []))
@@ -1543,7 +1562,7 @@ def _run_download(users):
             download_state['storage_after'] = directory_size_bytes(get_download_root())
             download_state['logs'] = [
                 time.strftime('[%H:%M:%S] All users recently processed, nothing to do'),
-                time.strftime('[%H:%M:%S] Checkpoint will expire after 12h'),
+                time.strftime(f'[%H:%M:%S] Checkpoint will expire after {checkpoint_expire_hours}h'),
                 time.strftime('[%H:%M:%S] Total: ' + str(progress_total) + ' users complete'),
             ]
             finalize_download_state()

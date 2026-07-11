@@ -20,7 +20,8 @@
         "max_concurrent": 16,
         "async_enabled": true,
         "enable_cache": true,
-        "auto_sync": false
+        "auto_sync": false,
+        "checkpoint_expire_hours": 12
     },
     "list_sync": {
         "enabled": false,

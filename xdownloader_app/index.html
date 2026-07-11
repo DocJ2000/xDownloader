@@ -894,6 +894,8 @@ const APP_TEXT = {
         enabled: '启用',
         disabled: '禁用',
         downloadAutoSync: '下载时自动同步',
+        checkpointExpireHours: '断点续传有效期（小时）',
+        checkpointHelp: '这是断点续传记录，不是下载冷却时间。软件会在这个时间内记住已处理过的用户；设为 0 表示每次从头检查。',
         tagSearch: '标签搜索',
         tag: '关键词',
         filter: '过滤条件',
@@ -1116,6 +1118,8 @@ const APP_TEXT = {
         enabled: 'Enabled',
         disabled: 'Disabled',
         downloadAutoSync: 'Auto sync while downloading',
+        checkpointExpireHours: 'Checkpoint expiry (hours)',
+        checkpointHelp: 'This is resume state, not a cooldown. The app remembers processed users within this window; set 0 to always check from the beginning.',
         tagSearch: 'Tag search',
         tag: 'Keyword',
         filter: 'Filter',
@@ -2878,6 +2882,7 @@ function zh(s) {
         imageFormat: '&#x56fe;&#x7247;&#x683c;&#x5f0f;', concurrency: '&#x5e76;&#x53d1;&#x6570;', video: '&#x4e0b;&#x8f7d;&#x89c6;&#x9891;', textTweets: '&#x4e0b;&#x8f7d;&#x6587;&#x672c;&#x63a8;&#x6587;',
         retweet: '&#x4e0b;&#x8f7d;&#x8f6c;&#x63a8;', highlights: '&#x9ad8;&#x4eae;&#x63a8;&#x6587;', likes: '&#x559c;&#x6b22;&#x5185;&#x5bb9;',
         cache: '&#x7f13;&#x5b58;', asyncDownload: '&#x5f02;&#x6b65;&#x4e0b;&#x8f7d;', enabled: '&#x542f;&#x7528;', disabled: '&#x7981;&#x7528;',
+        checkpointExpireHours: '&#x65ad;&#x70b9;&#x7eed;&#x4f20;&#x6709;&#x6548;&#x671f;&#xff08;&#x5c0f;&#x65f6;&#xff09;', checkpointHelp: '这是断点续传记录，不是下载冷却时间。软件会在这个时间内记住已处理过的用户；设为 0 表示每次从头检查。',
         listSync: '&#x5217;&#x8868;&#x540c;&#x6b65;', listId: '&#x5217;&#x8868; ID', listOwner: '&#x5217;&#x8868;&#x6240;&#x6709;&#x8005;', listSlug: '&#x5217;&#x8868;&#x77ed;&#x540d;', listSyncHelp: '&#x4f18;&#x5148;&#x4f7f;&#x7528;&#x5217;&#x8868; ID&#x3002;&#x53ef;&#x5728; X &#x6253;&#x5f00;&#x5217;&#x8868;&#x9875;&#xff0c;&#x4ece;&#x7f51;&#x5740; /i/lists/1234567890 &#x4e2d;&#x590d;&#x5236;&#x6570;&#x5b57; ID&#x3002;', autoSync: '&#x81ea;&#x52a8;&#x540c;&#x6b65;', advanced: '&#x9ad8;&#x7ea7;',
         userRetries: '&#x7528;&#x6237;&#x91cd;&#x8bd5;&#x6b21;&#x6570;', retryDelay: '&#x91cd;&#x8bd5;&#x95f4;&#x9694;&#x79d2;', logFile: '&#x65e5;&#x5fd7;&#x6587;&#x4ef6;',
         theme: '&#x4e3b;&#x9898;', darkTheme: '&#x6697;&#x8272;&#x73bb;&#x7483;', lightTheme: '&#x6742;&#x5fd7;&#x6d45;&#x8272;', save: '&#x4fdd;&#x5b58;&#x914d;&#x7f6e;', applyConfig: '应用', reload: '&#x91cd;&#x65b0;&#x52a0;&#x8f7d;',
@@ -2921,6 +2926,8 @@ function zh(s) {
             asyncDownload: 'Async download',
             enabled: 'Enabled',
             disabled: 'Disabled',
+            checkpointExpireHours: 'Checkpoint expiry (hours)',
+            checkpointHelp: 'This is resume state, not a cooldown. The app remembers processed users within this window; set 0 to always check from the beginning.',
             listSync: 'List Sync',
             listId: 'List ID',
             listOwner: 'List Owner',
@@ -3034,6 +3041,7 @@ async function initSettings() {
         + '<div class="form-section"><h3>' + zh('options') + '</h3>'
         + '<div class="form-row"><div class="form-group"><label>' + zh('timeRange') + '</label><input id="cfg_time_start" type="date"></div><div class="form-group"><label>&nbsp;</label><input id="cfg_time_end" type="date"></div></div>'
         + '<div class="form-row"><div class="form-group"><label>' + zh('imageFormat') + '</label><select id="cfg_image_format"><option value="orig">orig</option><option value="jpg">jpg</option><option value="png">png</option></select></div><div class="form-group"><label>' + zh('concurrency') + '</label><input id="cfg_max_concurrent" type="number" min="1" max="32"></div></div>'
+        + '<div class="form-group"><label>' + zh('checkpointExpireHours') + '</label><input id="cfg_checkpoint_expire_hours" type="number" min="0" max="168" step="1"><div class="field-help">' + zh('checkpointHelp') + '</div></div>'
         + '<div class="download-options"><label><input type="checkbox" id="cfg_has_video"> ' + zh('video') + '</label><label><input type="checkbox" id="cfg_has_text"> ' + zh('textTweets') + '</label><label><input type="checkbox" id="cfg_has_retweet"> ' + zh('retweet') + '</label><label><input type="checkbox" id="cfg_has_highlights"> ' + zh('highlights') + '</label><label><input type="checkbox" id="cfg_has_likes"> ' + zh('likes') + '</label></div>'
         + '<div class="form-row"><div class="form-group"><label>' + zh('cache') + '</label><select id="cfg_enable_cache"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div><div class="form-group"><label>' + zh('asyncDownload') + '</label><select id="cfg_async_enabled"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
         + '<div class="form-group"><label>' + zh('downloadAutoSync') + '</label><select id="cfg_download_auto_sync"><option value="true">' + zh('enabled') + '</option><option value="false">' + zh('disabled') + '</option></select></div></div>'
@@ -3046,6 +3054,7 @@ async function initSettings() {
     setSettingsTimeRangeControls(cfg.time_range || '2015-01-01:2030-01-01');
     document.getElementById('cfg_image_format').value = cfg.image_format || 'orig';
     document.getElementById('cfg_max_concurrent').value = (cfg.download && cfg.download.max_concurrent) || 16;
+    document.getElementById('cfg_checkpoint_expire_hours').value = cfg.download && cfg.download.checkpoint_expire_hours != null ? cfg.download.checkpoint_expire_hours : 12;
     document.getElementById('cfg_has_video').checked = !cfg.mode || cfg.mode.has_video !== false;
     document.getElementById('cfg_has_text').checked = !cfg.mode || cfg.mode.has_text !== false;
     document.getElementById('cfg_has_retweet').checked = !!(cfg.mode && cfg.mode.has_retweet);
@@ -3259,6 +3268,8 @@ async function openDownloadedInstaller() {
 async function saveSettings() {
     var maxConcurrent = Math.max(1, Math.min(32, parseInt(document.getElementById('cfg_max_concurrent').value) || 16));
     document.getElementById('cfg_max_concurrent').value = maxConcurrent;
+    var checkpointExpireHours = Math.max(0, Math.min(168, parseInt(document.getElementById('cfg_checkpoint_expire_hours').value) || 0));
+    document.getElementById('cfg_checkpoint_expire_hours').value = checkpointExpireHours;
     var payload = {
         cookie: document.getElementById('cfg_cookie').value,
         bearer_token: document.getElementById('cfg_bearer_token').value,
@@ -3272,6 +3283,7 @@ async function saveSettings() {
         'mode.has_highlights': document.getElementById('cfg_has_highlights').checked,
         'mode.has_likes': document.getElementById('cfg_has_likes').checked,
         'download.max_concurrent': maxConcurrent,
+        'download.checkpoint_expire_hours': checkpointExpireHours,
         'download.enable_cache': document.getElementById('cfg_enable_cache').value === 'true',
         'download.async_enabled': document.getElementById('cfg_async_enabled').value === 'true',
         'download.auto_sync': document.getElementById('cfg_download_auto_sync').value === 'true',

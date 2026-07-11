@@ -231,7 +231,8 @@ def cmd_download(config: AppConfig, config_path: str = "config.json"):
                 prog = _json.load(f)
             completed_at = prog.get('completed_at', 0)
             age_hours = (time.time() - completed_at) / 3600 if completed_at else 999
-            if age_hours > 12:
+            checkpoint_expire_hours = getattr(config, 'checkpoint_expire_hours', 12)
+            if checkpoint_expire_hours <= 0 or age_hours > checkpoint_expire_hours:
                 log.info(f"Checkpoint expired ({age_hours:.1f}h old), clearing")
                 os.remove(progress_file)
             else:
